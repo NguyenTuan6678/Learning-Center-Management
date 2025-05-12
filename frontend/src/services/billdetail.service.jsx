@@ -12,7 +12,7 @@ export const update = (payload) => {
       description: payload.description,
       amount: payload.amount,
       currency: payload.currency,
-      description: payload.description,
+      paymentStatus: payload.paymentStatus,
       studentId: payload.studentId,
       parentId: payload.parentId,
     },

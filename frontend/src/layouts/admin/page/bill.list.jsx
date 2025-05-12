@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
@@ -20,13 +20,12 @@ import {
 import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { getall as getAllParents } from "../../../services/parent.service";
 import { getall as getAllStudents } from "../../../services/student.service";
-import AddStudentDrawer from "../../../components/drawers";
+import moment from "moment";
 import { debounce } from "lodash";
 
 const ManageBills = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openDrawer, setOpenDrawer] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedRowData, setSelectedRowData] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,21 +39,33 @@ const ManageBills = () => {
   const [selectedParentId, setSelectedParentId] = useState(
     form.getFieldValue("parentId") || ""
   );
+  const [selectedBillStatus, setSelectedBillStatus] = useState(
+    form.getFieldValue("paymentStatus") || ""
+  );
 
   const handleStudentChange = (event) => {
     const value = event.target.value;
-    console.log("***Selected Student ID:", value);
+    // console.log("***Selected Student ID:", value);
     setSelectedStudentId(value);
+    form.setFieldsValue({ studentId: value });
   };
 
   const handleParentChange = (event) => {
     const value = event.target.value;
-    console.log("***Selected Parent ID:", value);
+    // console.log("***Selected Parent ID:", value);
     setSelectedParentId(value);
+    form.setFieldsValue({ parentId: value });
   };
 
-  console.log("***seletedRowData: ", selectedRowData);
-  console.log("***billDetailData: ", billDetailData);
+  const handleBillStatusChange = (event) => {
+    const value = event.target.value;
+    console.log("***Selected Bill Status:", value);
+    setSelectedBillStatus(value);
+    form.setFieldsValue({ billStatus: value });
+  };
+
+  //   console.log("***seletedRowData: ", selectedRowData);
+  //   console.log("***billDetailData: ", billDetailData);
 
   const fetchBills = async () => {
     setLoading(true);
@@ -83,13 +94,15 @@ const ManageBills = () => {
       console.log("**res bill detail", res);
       setBillDetailData(res?.data);
       form.setFieldsValue({
-        billdetailId: res?.data?.billdetailId,
+        billId: res?.data?.billId,
         description: res?.data?.description,
         amount: res?.data?.amount,
         currency: res?.data?.currency,
         studentId: res?.data?.studentId || "",
         parentId: res?.data?.parentId || "",
+        paymentStatus: res?.data?.paymentStatus || "",
       });
+      setSelectedBillStatus(res?.data?.paymentStatus || "");
     } catch (error) {
       console.error("Failed to fetch bill detail:", error);
       message.error("Lỗi khi tải chi tiết hóa đơn!");
@@ -101,7 +114,7 @@ const ManageBills = () => {
   const fetchStudents = async () => {
     try {
       const res = await getAllStudents();
-      console.log("**res students", res);
+      // console.log("**res students", res);
       setStudents(res?.data?.rows || []); // Assuming the API returns an array of StudentDTO
     } catch (error) {
       console.error("Failed to fetch students:", error);
@@ -112,61 +125,13 @@ const ManageBills = () => {
   const fetchParents = async () => {
     try {
       const res = await getAllParents();
-      console.log("**res parents", res);
+      // console.log("**res parents", res);
       setParents(res?.data?.rows || []); // Assuming the API returns an array of ParentDTO
     } catch (error) {
       console.error("Failed to fetch parents:", error);
       message.error("Lỗi khi tải danh sách phụ huynh!");
     }
   };
-
-  //   const handleDelete = async (id) => {
-  //     try {
-  //       await deleteStudent(id);
-  //       message.success("Xóa sinh viên thành công!");
-  //       fetchStudents();
-  //     } catch (error) {
-  //       console.error("Xóa thất bại:", error);
-  //       message.error("Xóa sinh viên thất bại!");
-  //     }
-  //   };
-
-  //   const handleSearch = async (name) => {
-  //     try {
-  //       const res = await search(name);
-  //       const students = res?.data || [];
-  //       setDataSource(
-  //         students.map((item, index) => ({
-  //           key: item.studentId || `student-${index}`,
-  //           ...item,
-  //         }))
-  //       );
-  //     } catch (error) {
-  //       console.error("Tìm kiếm thất bại:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   const handleCreate = async (values) => {
-  //     try {
-  //       await create(values);
-  //       message.success("Thêm sinh viên thành công!");
-  //       setOpenDrawer(false);
-  //       fetchStudents();
-  //     } catch (error) {
-  //       console.error("Thêm thất bại:", error);
-  //       message.error("Thêm sinh viên thất bại!");
-  //     }
-  //   };
-
-  //   const debouncedSearch = debounce(handleSearch, 5);
-
-  //   const handleSearchInputChange = (e) => {
-  //     const value = e.target.value;
-  //     setSearchText(value);
-  //     debouncedSearch(value);
-  //   };
 
   const handleEditClick = (record) => {
     setSelectedRowData(record);
@@ -175,18 +140,19 @@ const ManageBills = () => {
   };
 
   const handleUpdateBillDetail = async (values) => {
-    console.log("***billDetailData before update:", billDetailData);
     setLoading(true);
+    console.log("***Form Values on Submit:", values);
     try {
-      const payload = {
+      await updateBillDetail({
         id: billDetailData?.billId,
         description: values.description,
         amount: values.amount,
         currency: values.currency,
         studentId: values.studentId,
         parentId: values.parentId,
-      };
-      await updateBillDetail(payload);
+        paymentStatus: values.paymentStatus,
+      });
+      console.log("***Values ", values);
       message.success("Cập nhật hóa đơn thành công!");
       setIsModalOpen(false);
       setBillDetailData(null);
@@ -204,6 +170,8 @@ const ManageBills = () => {
     setBillDetailData(null);
     form.resetFields();
   };
+
+  const billStatusOptions = ["PENDING_PAYMENT", "PAID", "CANCELLED"];
 
   const columns = [
     { title: "Id", dataIndex: "id", key: "id", fixed: "left" },
@@ -237,6 +205,18 @@ const ManageBills = () => {
       },
     },
     {
+      title: "Thời gian tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (text) => (text ? moment(text).format("HH:mm DD-MM-YY") : ""),
+    },
+    {
+      title: "Thời gian cập nhật",
+      dataIndex: "updatedAt",
+      key: "updatedAt",
+      render: (text) => (text ? moment(text).format("HH:mm DD-MM-YY") : ""),
+    },
+    {
       title: "Hành đông",
       key: "action",
       fixed: "right",
@@ -254,31 +234,25 @@ const ManageBills = () => {
     },
   ];
 
-  const showDrawer = () => {
-    setOpenDrawer(true);
-  };
-
-  const closeDrawer = () => {
-    setOpenDrawer(false);
-  };
-
   useEffect(() => {
     fetchBills();
     fetchStudents();
     fetchParents();
-    form.setFieldsValue({
-      studentId: selectedStudentId,
-      parentId: selectedParentId,
-    });
-    // console.log(
-    //   "***Form Value (studentId) on Render:",
-    //   form.getFieldValue("studentId")
-    // );
   }, []);
 
-  //   console.log("***dataSource before Table:", dataSource);
-  //   console.log("***Students data before map:", students);
-  console.log("***Bills data before map:", billDetailData);
+  useEffect(() => {
+    if (billDetailData) {
+      console.log("***billDetailData changed:", billDetailData);
+      setSelectedStudentId(billDetailData.studentId || "");
+      setSelectedParentId(billDetailData.parentId || "");
+      setSelectedBillStatus(billDetailData.paymentStatus || "");
+      console.log("***selectedBillStatus:", selectedBillStatus);
+    }
+  }, [billDetailData]);
+
+  // console.log("***dataSource before Table:", dataSource);
+  // console.log("***Students data before map:", students);
+  // console.log("***Bills data before map:", billDetailData);
   return (
     <div style={{ width: "100%" }}>
       <div
@@ -301,7 +275,6 @@ const ManageBills = () => {
           type="primary"
           icon={<SearchOutlined />}
           style={{ marginBottom: "8px" }}
-          onClick={showDrawer}
         >
           Thêm hoá đơn
         </Button>
@@ -321,11 +294,6 @@ const ManageBills = () => {
           };
         }}
       />
-      <AddStudentDrawer
-        open={openDrawer}
-        onClose={closeDrawer}
-        // onCreate={handleCreate}
-      />
       <Modal
         title="Chi tiết hóa đơn"
         open={isModalOpen}
@@ -338,16 +306,17 @@ const ManageBills = () => {
             key="submit"
             type="primary"
             loading={loading}
-            onClick={handleUpdateBillDetail}
+            onClick={() => form.submit()}
           >
             Lưu
           </Button>,
         ]}
       >
         <Form form={form} layout="vertical" onFinish={handleUpdateBillDetail}>
-          <Form.Item name="billdetailId" label="Bill Detail ID">
-            <Input disabled />
+          <Form.Item name="billId" label="Id">
+            <Input disabled value={billDetailData?.billId} />
           </Form.Item>
+
           <Form.Item
             name="description"
             label="Nội dung"
@@ -355,6 +324,7 @@ const ManageBills = () => {
           >
             <Input />
           </Form.Item>
+
           <Form.Item
             name="amount"
             label="Số tiền"
@@ -362,6 +332,7 @@ const ManageBills = () => {
           >
             <InputNumber style={{ width: "100%" }} />
           </Form.Item>
+
           <Form.Item
             name="currency"
             label="Đơn vị tiền tệ"
@@ -371,6 +342,33 @@ const ManageBills = () => {
           >
             <Input />
           </Form.Item>
+
+          <Form.Item name="paymentStatus" label="Trạng thái hóa đơn">
+            <FormControl fullWidth>
+              <InputLabel id="payment-select-label">Trạng thái</InputLabel>
+              <Select
+                labelId="paymentStatus-select-label"
+                id="paymentStatus-select"
+                label="Trạng thái"
+                value={selectedBillStatus}
+                onChange={handleBillStatusChange}
+                style={{ width: "100%" }}
+              >
+                {billStatusOptions.map((status) => (
+                  <MenuItem key={status} value={status}>
+                    {status === "PENDING_PAYMENT"
+                      ? "Chờ thanh toán"
+                      : status === "PAID"
+                      ? "Đã thanh toán"
+                      : status === "CANCELLED"
+                      ? "Đã huỷ"
+                      : status}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Form.Item>
+
           <Form.Item
             name="studentId"
             label="Học sinh"
@@ -396,6 +394,7 @@ const ManageBills = () => {
               </Select>
             </FormControl>
           </Form.Item>
+
           <Form.Item
             name="parentId"
             label="Phụ huynh"
