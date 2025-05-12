@@ -1,4 +1,3 @@
-import { method } from "lodash";
 import createApiService from "./commonService/baseApiService";
 
 const api = createApiService({
@@ -7,12 +6,13 @@ const api = createApiService({
 
 export const update = (payload) => {
   return api.makeRequest({
-    url: `/api/billdetail/update/${payload.id}`,
+    url: `/api/billdetails/update/${payload.id}`,
     method: "PUT",
     data: {
       description: payload.description,
       amount: payload.amount,
       currency: payload.currency,
+      description: payload.description,
       studentId: payload.studentId,
       parentId: payload.parentId,
     },
@@ -21,7 +21,7 @@ export const update = (payload) => {
 
 export const get = (payload) => {
   return api.makeRequest({
-    url: `/api/billdetail/get/${payload}`,
+    url: `/api/billdetails/get/${payload}`,
     method: "GET",
     data: payload,
   });
