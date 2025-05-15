@@ -1,6 +1,26 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Typography, message, Input, Space } from "antd";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  TextField,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Search as SearchIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import {
   getall,
   create,
@@ -15,21 +35,34 @@ const ManageParents = () => {
   const [loading, setLoading] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const fetchParents = async () => {
     setLoading(true);
     try {
       const res = await getall();
-      console.log("**res", res);
       const parents = res?.data?.rows || [];
       setDataSource(
         parents.map((item, index) => ({
-          key: item.parentId || `parent-${index}`,
+          id: item.parentId || `parent-${index}`,
           ...item,
         }))
       );
     } catch (error) {
       console.error("Failed to fetch parents:", error);
+      showSnackbar("Lỗi khi tải danh sách phụ huynh", "error");
     } finally {
       setLoading(false);
     }
@@ -38,24 +71,13 @@ const ManageParents = () => {
   const handleDelete = async (id) => {
     try {
       await deleteParent(id);
-      message.success("Xóa phụ huynh thành công!");
+      showSnackbar("Xóa phụ huynh thành công!");
       fetchParents();
     } catch (error) {
       console.error("Xóa thất bại:", error);
-      message.error("Xóa phụ huynh thất bại!");
+      showSnackbar("Xóa phụ huynh thất bại!", "error");
     }
   };
-
-  //   const handleUpdate = async (id) => {
-  //     try {
-  //       await update(id);
-  //       message.success("Cập nhật sinh viên thành công!");
-  //       fetchStudents();
-  //     } catch (error) {
-  //       console.error("Cập nhật thất bại:", error);
-  //       message.error("Cập nhật sinh viên thất bại!");
-  //     }
-  //   };
 
   const handleSearch = async (name) => {
     try {
@@ -63,12 +85,13 @@ const ManageParents = () => {
       const parents = res?.data || [];
       setDataSource(
         parents.map((item, index) => ({
-          key: item.parentId || `parent-${index}`,
+          id: item.parentId || `parent-${index}`,
           ...item,
         }))
       );
     } catch (error) {
       console.error("Tìm kiếm thất bại:", error);
+      showSnackbar("Tìm kiếm thất bại!", "error");
     } finally {
       setLoading(false);
     }
@@ -77,45 +100,22 @@ const ManageParents = () => {
   const handleCreate = async (values) => {
     try {
       await create(values);
-      message.success("Thêm phụ huynh thành công!");
+      showSnackbar("Thêm phụ huynh thành công!");
       setOpenDrawer(false);
       fetchParents();
     } catch (error) {
       console.error("Thêm thất bại:", error);
-      message.error("Thêm phụ huynh thất bại!");
+      showSnackbar("Thêm phụ huynh thất bại!", "error");
     }
   };
 
-  const debouncedSearch = debounce(handleSearch, 5);
+  const debouncedSearch = debounce(handleSearch, 500);
 
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchText(value);
     debouncedSearch(value);
   };
-
-  const columns = [
-    { title: "Id", dataIndex: "id", key: "id", fixed: "left" },
-    { title: "Họ tên", dataIndex: "name", key: "name" },
-    { title: "Số điện thoại", dataIndex: "phoneNumber", key: "phoneNumber" },
-    { title: "Email", dataIndex: "email", key: "email" },
-    {
-      title: "Hành đông",
-      key: "action",
-      fixed: "right",
-      width: 110,
-      render: (_, record) => (
-        <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <Typography.Link onClick={() => handleDelete(record.id)}>
-            <DeleteFilled style={{ fontSize: "18px", color: "red" }} />
-          </Typography.Link>
-          <Typography.Link>
-            <EditFilled style={{ fontSize: "18px", color: "#1890ff" }} />
-          </Typography.Link>
-        </div>
-      ),
-    },
-  ];
 
   const showDrawer = () => {
     setOpenDrawer(true);
@@ -130,46 +130,111 @@ const ManageParents = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: "100%", padding: "20px" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
+          alignItems: "center",
+          gap: "12px",
           marginBottom: "16px",
+          flexWrap: "wrap",
         }}
       >
-        <Space.Compact>
-          <Input
-            style={{ width: "70%" }}
-            placeholder="Tìm kiếm"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={handleSearchInputChange}
-          />
-        </Space.Compact>
+        <TextField
+          placeholder="Tìm kiếm"
+          value={searchText}
+          onChange={handleSearchInputChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+          size="small"
+        />
+
         <Button
-          type="primary"
-          icon={<SearchOutlined />}
-          style={{ marginBottom: "8px" }}
+          variant="contained"
+          startIcon={<AddIcon />}
           onClick={showDrawer}
         >
           Thêm phụ huynh
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        scroll={{ x: 1500 }}
-        sticky={{ offsetHeader: 64 }}
-        pagination={true}
-        loading={loading}
-      />
+
+      <TableContainer component={Paper}>
+        <Table stickyHeader aria-label="parents table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Họ tên</TableCell>
+              <TableCell>Số điện thoại</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : dataSource.length > 0 ? (
+              dataSource.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.phoneNumber}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => handleDelete(row.id)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton color="primary">
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
       <AddStudentDrawer
         open={openDrawer}
         onClose={closeDrawer}
         onCreate={handleCreate}
       />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
+
 export default ManageParents;

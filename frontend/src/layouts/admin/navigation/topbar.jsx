@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import { Avatar, Dropdown, message } from "antd";
 import { UserOutlined, LogoutOutlined } from "@ant-design/icons";
 import { logout } from "../../../services/auth.service";
@@ -9,8 +9,6 @@ import { ColorModeContext, tokens } from "../../../themes/theme";
 
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
 const AppHeader = () => {
   const theme = useTheme();
@@ -52,12 +50,6 @@ const AppHeader = () => {
         ) : (
           <LightModeOutlinedIcon />
         )}
-      </IconButton>
-      <IconButton>
-        <NotificationsOutlinedIcon />
-      </IconButton>
-      <IconButton>
-        <SettingsOutlinedIcon />
       </IconButton>
       <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
         <Avatar icon={<UserOutlined />} />

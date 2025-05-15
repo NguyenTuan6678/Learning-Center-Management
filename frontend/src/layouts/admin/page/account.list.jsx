@@ -1,6 +1,30 @@
-import React, { useState, useEffect } from "react";
-import { Table, Button, Typography, message, Input, Space } from "antd";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  Button,
+  TextField,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Search as SearchIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import {
   getall,
   deleteAccount,
@@ -10,32 +34,42 @@ import {
 } from "../../../services/account.service";
 import AddStudentDrawer from "../../../components/drawers";
 import { debounce } from "lodash";
-import EditModal from "../../../components/modal";
 
 const ManageAccounts = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  console.log("***seletedRowData: ", selectedRowData);
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const fetchAccounts = async () => {
     setLoading(true);
     try {
       const res = await getall();
-      // console.log("**res", res);
       const accounts = res?.data?.rows || [];
       setDataSource(
         accounts.map((item, index) => ({
-          key: item.accountId || `account-${index}`,
+          id: item.accountId || `account-${index}`,
           ...item,
         }))
       );
     } catch (error) {
       console.error("Failed to fetch accounts:", error);
+      showSnackbar("Lỗi khi tải danh sách tài khoản", "error");
     } finally {
       setLoading(false);
     }
@@ -43,27 +77,27 @@ const ManageAccounts = () => {
 
   const handleEditClick = (record) => {
     setSelectedRowData(record);
-    setIsModalOpen(true);
-    // console.log("***data row ", record);
+    setOpenDialog(true);
   };
 
-  const handleModalClose = () => {
-    setIsModalOpen(false);
+  const handleDialogClose = () => {
+    setOpenDialog(false);
     setSelectedRowData(null);
   };
 
   const handleDelete = async (id, role) => {
     try {
       await deleteAccount(id, role);
-      message.success("Xóa tài khoản thành công!");
+      showSnackbar("Xóa tài khoản thành công!");
       fetchAccounts();
     } catch (error) {
       console.error("Xóa thất bại:", error);
-      message.error("Xóa tài khoản thất bại!");
+      showSnackbar("Xóa tài khoản thất bại!", "error");
     }
   };
 
   const handleUpdate = async (updatedData) => {
+    setLoading(true);
     try {
       await update({
         id: updatedData.id,
@@ -71,13 +105,15 @@ const ManageAccounts = () => {
         password: updatedData.password,
         role: updatedData.role,
       });
-      message.success("Cập nhật tài khoản thành công!");
+      showSnackbar("Cập nhật tài khoản thành công!");
       fetchAccounts();
-      setIsModalOpen(false); // Đóng modal sau khi thành công
-      setSelectedRowData(null); // Reset selected row data
+      setOpenDialog(false);
+      setSelectedRowData(null);
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
-      message.error("Cập nhật tài khoản thất bại!");
+      showSnackbar("Cập nhật tài khoản thất bại!", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -87,12 +123,13 @@ const ManageAccounts = () => {
       const accounts = res?.data || [];
       setDataSource(
         accounts.map((item, index) => ({
-          key: item.accountId || `account-${index}`,
+          id: item.accountId || `account-${index}`,
           ...item,
         }))
       );
     } catch (error) {
       console.error("Tìm kiếm thất bại:", error);
+      showSnackbar("Tìm kiếm thất bại!", "error");
     } finally {
       setLoading(false);
     }
@@ -101,45 +138,22 @@ const ManageAccounts = () => {
   const handleCreate = async (values) => {
     try {
       await create(values);
-      message.success("Thêm tài khoản thành công!");
+      showSnackbar("Thêm tài khoản thành công!");
       setOpenDrawer(false);
       fetchAccounts();
     } catch (error) {
       console.error("Thêm thất bại:", error);
-      message.error("Thêm tài khoản thất bại!");
+      showSnackbar("Thêm tài khoản thất bại!", "error");
     }
   };
 
-  const debouncedSearch = debounce(handleSearch, 5);
+  const debouncedSearch = debounce(handleSearch, 500);
 
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchText(value);
     debouncedSearch(value);
   };
-
-  const columns = [
-    { title: "Id", dataIndex: "id", key: "id", fixed: "left" },
-    { title: "Tên đăng nhập", dataIndex: "username", key: "username" },
-    { title: "Mật khẩu", dataIndex: "password", key: "password" },
-    { title: "Vai Trò", dataIndex: "role", key: "role" },
-    {
-      title: "Hành đông",
-      key: "action",
-      fixed: "right",
-      width: 110,
-      render: (_, record) => (
-        <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <Typography.Link onClick={() => handleDelete(record.id, record.role)}>
-            <DeleteFilled style={{ fontSize: "18px", color: "red" }} />
-          </Typography.Link>
-          <Typography.Link onClick={() => handleEditClick(record)}>
-            <EditFilled style={{ fontSize: "18px", color: "#1890ff" }} />
-          </Typography.Link>
-        </div>
-      ),
-    },
-  ];
 
   const showDrawer = () => {
     setOpenDrawer(true);
@@ -154,50 +168,190 @@ const ManageAccounts = () => {
   }, []);
 
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: "100%", padding: "20px" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
+          alignItems: "center",
+          gap: "12px",
           marginBottom: "16px",
+          flexWrap: "wrap",
         }}
       >
-        <Space.Compact>
-          <Input
-            style={{ width: 250 }}
-            placeholder="Search Accounts"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={handleSearchInputChange}
-          />
-        </Space.Compact>
+        <TextField
+          placeholder="Tìm kiếm tài khoản"
+          value={searchText}
+          onChange={handleSearchInputChange}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+          size="small"
+          style={{ width: 250 }}
+        />
+
         <Button
-          type="primary"
+          variant="contained"
+          startIcon={<AddIcon />}
           onClick={showDrawer}
-          style={{ marginLeft: "8px" }}
         >
           Thêm tài khoản
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        loading={loading}
-        scroll={{ x: 1500 }}
-        sticky={{ offsetHeader: 64 }}
-        pagination={true}
-      />
+
+      <TableContainer component={Paper}>
+        <Table stickyHeader aria-label="accounts table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Tên đăng nhập</TableCell>
+              <TableCell>Mật khẩu</TableCell>
+              <TableCell>Vai trò</TableCell>
+              <TableCell>Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : dataSource.length > 0 ? (
+              dataSource.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.username}</TableCell>
+                  <TableCell>••••••••</TableCell>
+                  <TableCell>{row.role}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={() => handleDelete(row.id, row.role)}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => handleEditClick(row)}
+                      color="primary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5} align="center">
+                  Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Edit Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Cập nhật tài khoản</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              paddingTop: "16px",
+            }}
+          >
+            <TextField
+              label="ID"
+              value={selectedRowData?.id || ""}
+              disabled
+              fullWidth
+              margin="normal"
+            />
+            <TextField
+              label="Tên đăng nhập"
+              defaultValue={selectedRowData?.username || ""}
+              fullWidth
+              margin="normal"
+              onChange={(e) =>
+                setSelectedRowData({
+                  ...selectedRowData,
+                  username: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Mật khẩu"
+              type="password"
+              defaultValue={selectedRowData?.password || ""}
+              fullWidth
+              margin="normal"
+              onChange={(e) =>
+                setSelectedRowData({
+                  ...selectedRowData,
+                  password: e.target.value,
+                })
+              }
+            />
+            <TextField
+              label="Vai trò"
+              defaultValue={selectedRowData?.role || ""}
+              fullWidth
+              margin="normal"
+              onChange={(e) =>
+                setSelectedRowData({
+                  ...selectedRowData,
+                  role: e.target.value,
+                })
+              }
+            />
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="secondary">
+            Hủy
+          </Button>
+          <Button
+            onClick={() => handleUpdate(selectedRowData)}
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Lưu"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <AddStudentDrawer
         open={openDrawer}
         onClose={closeDrawer}
         onCreate={handleCreate}
       />
-      <EditModal
-        open={isModalOpen}
-        handleClose={handleModalClose}
-        rowData={selectedRowData}
-        onConfirm={handleUpdate}
-      />
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

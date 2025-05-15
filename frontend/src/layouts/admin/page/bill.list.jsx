@@ -1,23 +1,41 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Button,
   Typography,
-  message,
-  Input,
-  Space,
-  Modal,
-  Form,
-  InputNumber,
-} from "antd";
-import { DeleteFilled, EditFilled, SearchOutlined } from "@ant-design/icons";
-import Chip from "@mui/material/Chip";
+  TextField,
+  InputAdornment,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Chip,
+  CircularProgress,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import {
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Search as SearchIcon,
+  Add as AddIcon,
+} from "@mui/icons-material";
 import { getall } from "../../../services/bill.service";
 import {
   get as getBillDetail,
   update as updateBillDetail,
 } from "../../../services/billdetail.service";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 import { getall as getAllParents } from "../../../services/parent.service";
 import { getall as getAllStudents } from "../../../services/student.service";
 import moment from "moment";
@@ -28,60 +46,43 @@ const ManageBills = () => {
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedRowData, setSelectedRowData] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [openDialog, setOpenDialog] = useState(false);
   const [billDetailData, setBillDetailData] = useState(null);
-  const [form] = Form.useForm();
   const [students, setStudents] = useState([]);
   const [parents, setParents] = useState([]);
-  const [selectedStudentId, setSelectedStudentId] = useState(
-    form.getFieldValue("studentId") || ""
-  );
-  const [selectedParentId, setSelectedParentId] = useState(
-    form.getFieldValue("parentId") || ""
-  );
-  const [selectedBillStatus, setSelectedBillStatus] = useState(
-    form.getFieldValue("paymentStatus") || ""
-  );
+  const [selectedStudentId, setSelectedStudentId] = useState("");
+  const [selectedParentId, setSelectedParentId] = useState("");
+  const [selectedBillStatus, setSelectedBillStatus] = useState("");
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-  const handleStudentChange = (event) => {
-    const value = event.target.value;
-    // console.log("***Selected Student ID:", value);
-    setSelectedStudentId(value);
-    form.setFieldsValue({ studentId: value });
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, message, severity });
   };
 
-  const handleParentChange = (event) => {
-    const value = event.target.value;
-    // console.log("***Selected Parent ID:", value);
-    setSelectedParentId(value);
-    form.setFieldsValue({ parentId: value });
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
   };
 
-  const handleBillStatusChange = (event) => {
-    const value = event.target.value;
-    console.log("***Selected Bill Status:", value);
-    setSelectedBillStatus(value);
-    form.setFieldsValue({ billStatus: value });
-  };
-
-  //   console.log("***seletedRowData: ", selectedRowData);
-  //   console.log("***billDetailData: ", billDetailData);
+  const billStatusOptions = ["PENDING_PAYMENT", "PAID", "CANCELLED"];
 
   const fetchBills = async () => {
     setLoading(true);
     try {
       const res = await getall();
-      console.log("**res", res);
       const bills = res?.data?.rows || [];
       setDataSource(
-        bills.map((item, index) => ({
-          key: item.billId || `bill-${index}`,
+        bills.map((item) => ({
+          id: item.billId || `bill-${item.id}`,
           ...item,
         }))
       );
     } catch (error) {
       console.error("Failed to fetch bills:", error);
-      message.error("Lỗi khi tải danh sách hóa đơn!");
+      showSnackbar("Lỗi khi tải danh sách hóa đơn!", "error");
     } finally {
       setLoading(false);
     }
@@ -91,21 +92,13 @@ const ManageBills = () => {
     setLoading(true);
     try {
       const res = await getBillDetail(billId);
-      console.log("**res bill detail", res);
       setBillDetailData(res?.data);
-      form.setFieldsValue({
-        billId: res?.data?.billId,
-        description: res?.data?.description,
-        amount: res?.data?.amount,
-        currency: res?.data?.currency,
-        studentId: res?.data?.studentId || "",
-        parentId: res?.data?.parentId || "",
-        paymentStatus: res?.data?.paymentStatus || "",
-      });
+      setSelectedStudentId(res?.data?.studentId || "");
+      setSelectedParentId(res?.data?.parentId || "");
       setSelectedBillStatus(res?.data?.paymentStatus || "");
     } catch (error) {
       console.error("Failed to fetch bill detail:", error);
-      message.error("Lỗi khi tải chi tiết hóa đơn!");
+      showSnackbar("Lỗi khi tải chi tiết hóa đơn!", "error");
     } finally {
       setLoading(false);
     }
@@ -114,125 +107,96 @@ const ManageBills = () => {
   const fetchStudents = async () => {
     try {
       const res = await getAllStudents();
-      // console.log("**res students", res);
-      setStudents(res?.data?.rows || []); // Assuming the API returns an array of StudentDTO
+      setStudents(res?.data?.rows || []);
     } catch (error) {
       console.error("Failed to fetch students:", error);
-      message.error("Lỗi khi tải danh sách học sinh!");
+      showSnackbar("Lỗi khi tải danh sách học sinh!", "error");
     }
   };
 
   const fetchParents = async () => {
     try {
       const res = await getAllParents();
-      // console.log("**res parents", res);
-      setParents(res?.data?.rows || []); // Assuming the API returns an array of ParentDTO
+      setParents(res?.data?.rows || []);
     } catch (error) {
       console.error("Failed to fetch parents:", error);
-      message.error("Lỗi khi tải danh sách phụ huynh!");
+      showSnackbar("Lỗi khi tải danh sách phụ huynh!", "error");
     }
   };
 
   const handleEditClick = (record) => {
     setSelectedRowData(record);
-    setIsModalOpen(true);
+    setOpenDialog(true);
     fetchBillDetail(record.id);
   };
 
-  const handleUpdateBillDetail = async (values) => {
+  const handleUpdateBillDetail = async () => {
     setLoading(true);
-    console.log("***Form Values on Submit:", values);
     try {
       await updateBillDetail({
         id: billDetailData?.billId,
-        description: values.description,
-        amount: values.amount,
-        currency: values.currency,
-        studentId: values.studentId,
-        parentId: values.parentId,
-        paymentStatus: values.paymentStatus,
+        description: billDetailData?.description,
+        amount: billDetailData?.amount,
+        currency: billDetailData?.currency,
+        studentId: selectedStudentId,
+        parentId: selectedParentId,
+        paymentStatus: selectedBillStatus,
       });
-      console.log("***Values ", values);
-      message.success("Cập nhật hóa đơn thành công!");
-      setIsModalOpen(false);
+      showSnackbar("Cập nhật hóa đơn thành công!");
+      setOpenDialog(false);
       setBillDetailData(null);
       fetchBills();
     } catch (error) {
       console.error("Failed to update bill detail:", error);
-      message.error("Lỗi khi cập nhật hóa đơn!");
+      showSnackbar("Lỗi khi cập nhật hóa đơn!", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleModalCancel = () => {
-    setIsModalOpen(false);
+  const handleDialogClose = () => {
+    setOpenDialog(false);
     setBillDetailData(null);
-    form.resetFields();
+    setSelectedStudentId("");
+    setSelectedParentId("");
+    setSelectedBillStatus("");
   };
 
-  const billStatusOptions = ["PENDING_PAYMENT", "PAID", "CANCELLED"];
+  const handleStudentChange = (event) => {
+    setSelectedStudentId(event.target.value);
+  };
 
-  const columns = [
-    { title: "Id", dataIndex: "id", key: "id", fixed: "left" },
-    { title: "Nội dung", dataIndex: "content", key: "content" },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        let color = "default";
-        let label = "";
+  const handleParentChange = (event) => {
+    setSelectedParentId(event.target.value);
+  };
 
-        switch (status) {
-          case "PENDING_PAYMENT":
-            color = "warning";
-            label = "Chờ thanh toán";
-            break;
-          case "PAID":
-            color = "success";
-            label = "Đã thanh toán";
-            break;
-          case "CANCELLED":
-            color = "error";
-            label = "Đã huỷ";
-            break;
-          default:
-            label = status;
-        }
+  const handleBillStatusChange = (event) => {
+    setSelectedBillStatus(event.target.value);
+  };
 
-        return <Chip label={label} color={color} variant="outlined" />;
-      },
-    },
-    {
-      title: "Thời gian tạo",
-      dataIndex: "createdAt",
-      key: "createdAt",
-      render: (text) => (text ? moment(text).format("HH:mm DD-MM-YY") : ""),
-    },
-    {
-      title: "Thời gian cập nhật",
-      dataIndex: "updatedAt",
-      key: "updatedAt",
-      render: (text) => (text ? moment(text).format("HH:mm DD-MM-YY") : ""),
-    },
-    {
-      title: "Hành đông",
-      key: "action",
-      fixed: "right",
-      width: 110,
-      render: (_, record) => (
-        <div style={{ display: "flex", justifyContent: "center", gap: 12 }}>
-          <Typography.Link onClick={() => handleDelete(record.id)}>
-            <DeleteFilled style={{ fontSize: "18px", color: "red" }} />
-          </Typography.Link>
-          <Typography.Link>
-            <EditFilled style={{ fontSize: "18px", color: "#1890ff" }} />
-          </Typography.Link>
-        </div>
-      ),
-    },
-  ];
+  const getStatusChip = (status) => {
+    let color = "default";
+    let label = "";
+
+    switch (status) {
+      case "PENDING_PAYMENT":
+        color = "warning";
+        label = "Chờ thanh toán";
+        break;
+      case "PAID":
+        color = "success";
+        label = "Đã thanh toán";
+        break;
+      case "CANCELLED":
+        color = "error";
+        label = "Đã huỷ";
+        break;
+      default:
+        label = status;
+    }
+
+    return <Chip label={label} color={color} variant="outlined" />;
+  };
 
   useEffect(() => {
     fetchBills();
@@ -240,119 +204,191 @@ const ManageBills = () => {
     fetchParents();
   }, []);
 
-  useEffect(() => {
-    if (billDetailData) {
-      console.log("***billDetailData changed:", billDetailData);
-      setSelectedStudentId(billDetailData.studentId || "");
-      setSelectedParentId(billDetailData.parentId || "");
-      setSelectedBillStatus(billDetailData.paymentStatus || "");
-      console.log("***selectedBillStatus:", selectedBillStatus);
-    }
-  }, [billDetailData]);
-
-  // console.log("***dataSource before Table:", dataSource);
-  // console.log("***Students data before map:", students);
-  // console.log("***Bills data before map:", billDetailData);
   return (
-    <div style={{ width: "100%" }}>
+    <div style={{ width: "100%", padding: "20px" }}>
       <div
         style={{
           display: "flex",
           justifyContent: "flex-end",
+          alignItems: "center",
+          gap: "12px",
           marginBottom: "16px",
+          flexWrap: "wrap",
         }}
       >
-        <Space.Compact>
-          <Input
-            style={{ width: "70%" }}
-            placeholder="Tìm kiếm"
-            prefix={<SearchOutlined />}
-            value={searchText}
-            // onChange={handleSearchInputChange}
-          />
-        </Space.Compact>
+        <TextField
+          placeholder="Tìm kiếm"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          variant="outlined"
+          size="small"
+        />
+
         <Button
-          type="primary"
-          icon={<SearchOutlined />}
-          style={{ marginBottom: "8px" }}
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => {
+            /* Handle add new bill */
+          }}
         >
           Thêm hoá đơn
         </Button>
       </div>
-      <Table
-        columns={columns}
-        dataSource={dataSource}
-        scroll={{ x: 1500 }}
-        sticky={{ offsetHeader: 64 }}
-        pagination={true}
-        loading={loading}
-        onRow={(record) => {
-          return {
-            onClick: () => {
-              handleEditClick(record);
-            },
-          };
-        }}
-      />
-      <Modal
-        title="Chi tiết hóa đơn"
-        open={isModalOpen}
-        onCancel={handleModalCancel}
-        footer={[
-          <Button key="cancel" onClick={handleModalCancel}>
-            Hủy
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={loading}
-            onClick={() => form.submit()}
-          >
-            Lưu
-          </Button>,
-        ]}
+
+      <TableContainer component={Paper}>
+        <Table stickyHeader aria-label="bills table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Nội dung</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell>Thời gian tạo</TableCell>
+              <TableCell>Thời gian cập nhật</TableCell>
+              <TableCell>Hành động</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
+            ) : dataSource.length > 0 ? (
+              dataSource.map((row) => (
+                <TableRow
+                  key={row.id}
+                  hover
+                  onClick={() => handleEditClick(row)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <TableCell>{row.id}</TableCell>
+                  <TableCell>{row.content}</TableCell>
+                  <TableCell>{getStatusChip(row.status)}</TableCell>
+                  <TableCell>
+                    {row.createdAt
+                      ? moment(row.createdAt).format("HH:mm DD-MM-YY")
+                      : ""}
+                  </TableCell>
+                  <TableCell>
+                    {row.updatedAt
+                      ? moment(row.updatedAt).format("HH:mm DD-MM-YY")
+                      : ""}
+                  </TableCell>
+                  <TableCell>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        /* Handle delete */
+                      }}
+                      color="error"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(row);
+                      }}
+                      color="primary"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={6} align="center">
+                  Không có dữ liệu
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Bill Detail Dialog */}
+      <Dialog
+        open={openDialog}
+        onClose={handleDialogClose}
+        maxWidth="md"
+        fullWidth
       >
-        <Form form={form} layout="vertical" onFinish={handleUpdateBillDetail}>
-          <Form.Item name="billId" label="Id">
-            <Input disabled value={billDetailData?.billId} />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Nội dung"
-            rules={[{ required: true, message: "Vui lòng nhập nội dung!" }]}
+        <DialogTitle>Chi tiết hóa đơn</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              paddingTop: "16px",
+            }}
           >
-            <Input />
-          </Form.Item>
+            <TextField
+              label="ID"
+              value={billDetailData?.billId || ""}
+              disabled
+              fullWidth
+              margin="normal"
+            />
 
-          <Form.Item
-            name="amount"
-            label="Số tiền"
-            rules={[{ required: true, message: "Vui lòng nhập số tiền!" }]}
-          >
-            <InputNumber style={{ width: "100%" }} />
-          </Form.Item>
+            <TextField
+              label="Nội dung"
+              value={billDetailData?.description || ""}
+              onChange={(e) =>
+                setBillDetailData({
+                  ...billDetailData,
+                  description: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              required
+            />
 
-          <Form.Item
-            name="currency"
-            label="Đơn vị tiền tệ"
-            rules={[
-              { required: true, message: "Vui lòng chọn đơn vị tiền tệ!" },
-            ]}
-          >
-            <Input />
-          </Form.Item>
+            <TextField
+              label="Số tiền"
+              type="number"
+              value={billDetailData?.amount || ""}
+              onChange={(e) =>
+                setBillDetailData({
+                  ...billDetailData,
+                  amount: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              required
+            />
 
-          <Form.Item name="paymentStatus" label="Trạng thái hóa đơn">
-            <FormControl fullWidth>
-              <InputLabel id="payment-select-label">Trạng thái</InputLabel>
+            <TextField
+              label="Đơn vị tiền tệ"
+              value={billDetailData?.currency || ""}
+              onChange={(e) =>
+                setBillDetailData({
+                  ...billDetailData,
+                  currency: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              required
+            />
+
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Trạng thái hóa đơn</InputLabel>
               <Select
-                labelId="paymentStatus-select-label"
-                id="paymentStatus-select"
-                label="Trạng thái"
                 value={selectedBillStatus}
                 onChange={handleBillStatusChange}
-                style={{ width: "100%" }}
+                label="Trạng thái hóa đơn"
               >
                 {billStatusOptions.map((status) => (
                   <MenuItem key={status} value={status}>
@@ -367,24 +403,17 @@ const ManageBills = () => {
                 ))}
               </Select>
             </FormControl>
-          </Form.Item>
 
-          <Form.Item
-            name="studentId"
-            label="Học sinh"
-            rules={[{ required: true, message: "Vui lòng chọn học sinh!" }]}
-          >
-            <FormControl fullWidth>
-              <InputLabel id="student-select-label">Học sinh</InputLabel>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Học sinh</InputLabel>
               <Select
-                labelId="student-select-label"
-                id="student-select"
-                label="Học sinh"
                 value={selectedStudentId}
                 onChange={handleStudentChange}
+                label="Học sinh"
+                required
               >
                 <MenuItem value="" disabled>
-                  <em>Chọn học sinh</em>
+                  Chọn học sinh
                 </MenuItem>
                 {students.map((student) => (
                   <MenuItem key={student.id} value={student.id}>
@@ -393,24 +422,17 @@ const ManageBills = () => {
                 ))}
               </Select>
             </FormControl>
-          </Form.Item>
 
-          <Form.Item
-            name="parentId"
-            label="Phụ huynh"
-            rules={[{ required: true, message: "Vui lòng chọn phụ huynh!" }]}
-          >
-            <FormControl fullWidth>
-              <InputLabel id="parent-select-label">Phụ huynh</InputLabel>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Phụ huynh</InputLabel>
               <Select
-                labelId="parent-select-label"
-                id="parent-select"
-                label="Phụ huynh"
                 value={selectedParentId}
                 onChange={handleParentChange}
+                label="Phụ huynh"
+                required
               >
-                <MenuItem value="" disabled="true">
-                  <em>Chọn phụ huynh</em>
+                <MenuItem value="" disabled>
+                  Chọn phụ huynh
                 </MenuItem>
                 {parents.map((parent) => (
                   <MenuItem key={parent.id} value={parent.id}>
@@ -419,9 +441,35 @@ const ManageBills = () => {
                 ))}
               </Select>
             </FormControl>
-          </Form.Item>
-        </Form>
-      </Modal>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDialogClose} color="secondary">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleUpdateBillDetail}
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Lưu"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Layout } from "antd";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import AppHeader from "./navigation/topbar";
 import AppFooter from "./navigation/footer";
 import AppContent from "./navigation/content";
@@ -7,21 +7,12 @@ import BreadCrumb from "../../components/breadcrumbs";
 import ManageStudents from "./page/student.list";
 import AppSider from "./navigation/sidebar";
 import { ColorModeContext, useMode } from "../../themes/theme";
-import "./index.css";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import ManageAccounts from "./page/account.list";
 import ManageParents from "./page/parent.list";
 import ManageBills from "./page/bill.list";
 
 const componentMap = {
-  dashboard: () => (
-    <div
-      className="site-layout-background"
-      style={{ padding: 24, minHeight: 360 }}
-    >
-      Dashboard Content
-    </div>
-  ),
+  dashboard: () => <Box sx={{ p: 3, minHeight: 360 }}>Dashboard Content</Box>,
   manageStudents: () => <ManageStudents />,
   manageAccounts: () => <ManageAccounts />,
   manageParents: () => <ManageParents />,
@@ -30,7 +21,7 @@ const componentMap = {
 
 const AdminDashboard = () => {
   const [theme, colorMode] = useMode();
-  const [isSidebar, setIsSidebar] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard");
 
   const handleMenuItemClick = (e) => {
@@ -42,60 +33,53 @@ const AdminDashboard = () => {
     return ComponentToRender ? (
       <ComponentToRender />
     ) : (
-      <div
-        className="site-layout-background"
-        style={{ padding: 24, minHeight: 360 }}
-      >
-        {selectedMenuItem} Content
-      </div>
+      <Box sx={{ p: 3, minHeight: 360 }}>{selectedMenuItem} Content</Box>
     );
   };
-
-  // return (
-  //   <Layout style={{ minHeight: "100vh", flexDirection: "column" }}>
-  //     <AppHeader />
-  //     <Layout style={{ flexDirection: "row", flex: 1 }}>
-  //       <AppSider
-  //         onMenuItemClick={handleMenuItemClick}
-  //         selectedKeys={[selectedMenuItem]}
-  //       />
-  //       <Layout style={{ flexDirection: "column", flex: 1, marginLeft: 0 }}>
-  //         <BreadCrumb selectedMenuItem={selectedMenuItem} />
-  //         <AppContent>{renderContent()}</AppContent>
-  //         <AppFooter style={{ textAlign: "right", padding: "0 16px 24px" }} />
-  //       </Layout>
-  //     </Layout>
-  //   </Layout>
-  // );
 
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <div className="app">
+        <Box sx={{ display: "flex" }}>
           <AppSider
+            isOpen={isSidebarOpen}
             onMenuItemClick={handleMenuItemClick}
             selectedKeys={[selectedMenuItem]}
-            isSidebar={isSidebar}
           />
-          <main className="content">
-            <AppHeader setIsSidebar={setIsSidebar} />
-            <Layout
-              style={{
-                minHeight: "91vh",
+
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              p: 3,
+              transition: theme.transitions.create("margin", {
+                easing: theme.transitions.easing.sharp,
+                duration: theme.transitions.duration.leavingScreen,
+              }),
+              marginLeft: { sm: isSidebarOpen ? "0" : "80px" },
+              width: { sm: `calc(100% - ${isSidebarOpen ? 0 : 40}px)` },
+            }}
+          >
+            <AppHeader
+              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+            />
+
+            <Box
+              sx={{
+                display: "flex",
                 flexDirection: "column",
-                flex: 1,
-                marginLeft: 0,
+                minHeight: "calc(100vh - 64px)",
               }}
             >
               <BreadCrumb selectedMenuItem={selectedMenuItem} />
+
               <AppContent>{renderContent()}</AppContent>
-              <AppFooter
-                style={{ textAlign: "right", padding: "0 16px 24px" }}
-              />
-            </Layout>
-          </main>
-        </div>
+
+              <AppFooter />
+            </Box>
+          </Box>
+        </Box>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );
