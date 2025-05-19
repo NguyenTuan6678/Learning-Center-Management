@@ -26,3 +26,17 @@ export const get = (payload) => {
     data: payload,
   });
 };
+
+export const getBillForStudent = (billid, studentid) => {
+  return api.makeRequest({
+    url: `/api/billdetails/${billid}/student/${studentid}`,
+    method: "GET",
+  });
+};
+
+export const getAllBillDetailsForStudent = (studentId) => {
+  return api.makeRequest({
+    url: `/api/billdetails/student/${studentId}`,
+    method: "GET",
+  });
+};

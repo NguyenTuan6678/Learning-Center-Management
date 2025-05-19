@@ -8,9 +8,9 @@ import {
   TableRow,
   Paper,
   Button,
+  Typography,
   TextField,
   InputAdornment,
-  IconButton,
   TablePagination,
   CircularProgress,
   Snackbar,
@@ -23,18 +23,11 @@ import {
   Upload as UploadIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
-import {
-  getall,
-  deleteStudent,
-  create,
-  update,
-  search,
-  upload as uploadExcel,
-} from "../../../services/student.service";
+import { getall, create, search } from "../../../services/student.service";
 import AddStudentDrawer from "../../../components/drawers";
 import { debounce } from "lodash";
 
-const ManageStudents = () => {
+const ManageAdminLearningOutcomes = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
@@ -90,28 +83,6 @@ const ManageStudents = () => {
   const handleChangeRowsPerPage = (event) => {
     const rowsPerPage = parseInt(event.target.value, 10);
     fetchStudents(0, rowsPerPage);
-  };
-
-  const handleDelete = async (id) => {
-    try {
-      await deleteStudent(id);
-      showSnackbar("Xóa sinh viên thành công!");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-    } catch (error) {
-      console.error("Xóa thất bại:", error);
-      showSnackbar("Xóa sinh viên thất bại!", "error");
-    }
-  };
-
-  const handleUpdate = async (id) => {
-    try {
-      await update(id);
-      showSnackbar("Cập nhật sinh viên thành công!");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-    } catch (error) {
-      console.error("Cập nhật thất bại:", error);
-      showSnackbar("Cập nhật sinh viên thất bại!", "error");
-    }
   };
 
   const handleSearch = async (name) => {
@@ -235,38 +206,6 @@ const ManageStudents = () => {
           variant="outlined"
           size="small"
         />
-
-        <Button
-          variant="contained"
-          component="label"
-          startIcon={<UploadIcon />}
-          disabled={loading}
-        >
-          Chọn file Excel
-          <input
-            type="file"
-            hidden
-            accept=".xls,.xlsx"
-            onChange={handleFileChange}
-          />
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleFileUpload}
-          disabled={!selectedFile || loading}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
-        >
-          Thêm từ file .xls
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={showDrawer}
-          startIcon={<AddIcon />}
-        >
-          Thêm học sinh
-        </Button>
       </div>
 
       <TableContainer
@@ -296,9 +235,6 @@ const ManageStudents = () => {
               <TableCell>STT</TableCell>
               <TableCell>ID</TableCell>
               <TableCell>Họ tên</TableCell>
-              <TableCell>Số điện thoại</TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -318,19 +254,6 @@ const ManageStudents = () => {
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.phoneNumber}</TableCell>
-                  <TableCell>{row.email}</TableCell>
-                  <TableCell>
-                    <IconButton
-                      onClick={() => handleDelete(row.id)}
-                      color="error"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                    <IconButton onClick={() => handleUpdate(row.id)}>
-                      <EditIcon color="primary" />
-                    </IconButton>
-                  </TableCell>
                 </TableRow>
               ))
             ) : (
@@ -378,4 +301,4 @@ const ManageStudents = () => {
   );
 };
 
-export default ManageStudents;
+export default ManageAdminLearningOutcomes;

@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 import { getLocalData, setLocalData } from "../../services/localStorage";
 import { isLoggedInText, roles } from "../../utils/constants";
+import { set } from "lodash";
 
 const initialState = {
   userData: {
@@ -13,6 +14,7 @@ const initialState = {
     : false,
   role: getLocalData(roles) ? getLocalData(roles) : "user",
   errorMassage: false,
+  studentId: getLocalData("studentId") || null,
 };
 
 const reducer = createSlice({
@@ -24,14 +26,19 @@ const reducer = createSlice({
     },
     loginSuccess: (state, action) => {
       state.isLoggedIn = true;
-      state.role = action.payload;
-      setLocalData(roles, action.payload);
+      state.role = action.payload.role;
+      state.studentId = action.payload.studentId;
+      state.teacherId = action.payload.teacherId;
+      setLocalData(roles, action.payload.role);
+      setLocalData("studentId", action.payload.studentId);
+      setLocalData("teacherId", action.payload.teacherId);
       setLocalData(isLoggedInText, true);
     },
     logout: (state, action) => {
       state.isLoggedIn = false;
       state.role = "user";
     },
+    resetAuthState: () => initialState,
   },
 });
 

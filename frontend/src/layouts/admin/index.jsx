@@ -10,6 +10,7 @@ import { ColorModeContext, useMode } from "../../themes/theme";
 import ManageAccounts from "./page/account.list";
 import ManageParents from "./page/parent.list";
 import ManageBills from "./page/bill.list";
+import ManageAdminLearningOutcomes from "./page/student.learningoutcome";
 
 const componentMap = {
   dashboard: () => <Box sx={{ p: 3, minHeight: 360 }}>Dashboard Content</Box>,
@@ -17,6 +18,7 @@ const componentMap = {
   manageAccounts: () => <ManageAccounts />,
   manageParents: () => <ManageParents />,
   manageBills: () => <ManageBills />,
+  manageLearningOutcomes: () => <ManageAdminLearningOutcomes />,
 };
 
 const AdminDashboard = () => {

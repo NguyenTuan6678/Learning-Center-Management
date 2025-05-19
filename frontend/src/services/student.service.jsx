@@ -59,3 +59,10 @@ export const upload = (file) => {
     data: formData,
   });
 };
+
+export const getStudentIdByAccount = (accountId) => {
+  return api.makeRequest({
+    url: `/api/student/by-account/${accountId}`,
+    method: "GET",
+  });
+};

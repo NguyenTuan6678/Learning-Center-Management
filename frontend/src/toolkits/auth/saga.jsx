@@ -12,14 +12,19 @@ function* loginSaga({ payload }) {
     const response = yield call(login, payload);
     if (response.status === 200) {
       const data = response.data;
-      const { accessToken, role, id } = data;
+      const { accessToken, role, id, studentId, teacherId } = data;
       console.log("****data saga: ", data);
       if (accessToken) {
         setLocalData(isLoggedInText, true);
         setLocalData("accessToken", accessToken);
         setLocalData(roles, role);
         setLocalData("accountId", id);
-        yield put(authSlice.actions.loginSuccess(role));
+        setLocalData("studentId", studentId);
+        setLocalData("teacherId", teacherId);
+
+        yield put(
+          authSlice.actions.loginSuccess({ role, studentId, teacherId })
+        );
         // window.location.reload();
         yield put(alertSlice.actions.success("Đăng nhập thành công"));
         window.location.reload();
@@ -52,6 +57,8 @@ function* logoutSaga() {
     removeLocalData("accessToken");
     removeLocalData(roles);
     removeLocalData("userId");
+    removeLocalData("studentId");
+    removeLocalData("teacherId");
     window.location.reload();
   }
 }

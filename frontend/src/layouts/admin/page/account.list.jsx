@@ -10,6 +10,7 @@ import {
   Button,
   TextField,
   InputAdornment,
+  TablePagination,
   IconButton,
   CircularProgress,
   Dialog,
@@ -24,6 +25,8 @@ import {
   Edit as EditIcon,
   Search as SearchIcon,
   Add as AddIcon,
+  Visibility,
+  VisibilityOff,
 } from "@mui/icons-material";
 import {
   getall,
@@ -42,10 +45,16 @@ const ManageAccounts = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [selectedRowData, setSelectedRowData] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success",
+  });
+  const [paginationInfo, setPaginationInfo] = useState({
+    page: 0,
+    rowsPerPage: 10,
+    total: 0,
   });
 
   const showSnackbar = (message, severity = "success") => {
@@ -56,10 +65,10 @@ const ManageAccounts = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const fetchAccounts = async () => {
+  const fetchAccounts = async (page = 0, rowsPerPage = 10) => {
     setLoading(true);
     try {
-      const res = await getall();
+      const res = await getall({ page, size: rowsPerPage });
       const accounts = res?.data?.rows || [];
       setDataSource(
         accounts.map((item, index) => ({
@@ -67,6 +76,11 @@ const ManageAccounts = () => {
           ...item,
         }))
       );
+      setPaginationInfo({
+        page,
+        rowsPerPage,
+        total: res?.data?.count || 0,
+      });
     } catch (error) {
       console.error("Failed to fetch accounts:", error);
       showSnackbar("Lỗi khi tải danh sách tài khoản", "error");
@@ -75,9 +89,19 @@ const ManageAccounts = () => {
     }
   };
 
+  const handleChangePage = (event, newPage) => {
+    fetchStudents(newPage, paginationInfo.rowsPerPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    const rowsPerPage = parseInt(event.target.value, 10);
+    fetchStudents(0, rowsPerPage);
+  };
+
   const handleEditClick = (record) => {
     setSelectedRowData(record);
     setOpenDialog(true);
+    setShowPassword(false);
   };
 
   const handleDialogClose = () => {
@@ -140,7 +164,7 @@ const ManageAccounts = () => {
       await create(values);
       showSnackbar("Thêm tài khoản thành công!");
       setOpenDrawer(false);
-      fetchAccounts();
+      fetchAccounts(paginationInfo.page, paginationInfo.rowsPerPage);
     } catch (error) {
       console.error("Thêm thất bại:", error);
       showSnackbar("Thêm tài khoản thất bại!", "error");
@@ -208,6 +232,7 @@ const ManageAccounts = () => {
         <Table stickyHeader aria-label="accounts table">
           <TableHead>
             <TableRow>
+              <TableCell>STT</TableCell>
               <TableCell>ID</TableCell>
               <TableCell>Tên đăng nhập</TableCell>
               <TableCell>Mật khẩu</TableCell>
@@ -223,8 +248,13 @@ const ManageAccounts = () => {
                 </TableCell>
               </TableRow>
             ) : dataSource.length > 0 ? (
-              dataSource.map((row) => (
+              dataSource.map((row, index) => (
                 <TableRow key={row.id}>
+                  <TableCell>
+                    {index +
+                      1 +
+                      paginationInfo.page * paginationInfo.rowsPerPage}
+                  </TableCell>
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.username}</TableCell>
                   <TableCell>••••••••</TableCell>
@@ -294,7 +324,7 @@ const ManageAccounts = () => {
             />
             <TextField
               label="Mật khẩu"
-              type="password"
+              type={showPassword ? "text" : "password"}
               defaultValue={selectedRowData?.password || ""}
               fullWidth
               margin="normal"
@@ -304,6 +334,18 @@ const ManageAccounts = () => {
                   password: e.target.value,
                 })
               }
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
             <TextField
               label="Vai trò"
@@ -332,6 +374,17 @@ const ManageAccounts = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <TablePagination
+        rowsPerPageOptions={[5, 10, 25]}
+        component="div"
+        count={paginationInfo.total}
+        rowsPerPage={paginationInfo.rowsPerPage}
+        page={paginationInfo.page}
+        onPageChange={handleChangePage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+        labelRowsPerPage="Số hàng mỗi trang:"
+      />
 
       <AddStudentDrawer
         open={openDrawer}

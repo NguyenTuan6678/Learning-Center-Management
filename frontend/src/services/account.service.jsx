@@ -37,8 +37,10 @@ export const update = (payload) => {
 };
 
 export const getall = (payload) => {
+  const page = payload.page || 0;
+  const size = payload.size || 10;
   return api.makeRequest({
-    url: "/api/account/listacc",
+    url: `/api/account/listacc?page=${page}&size=${size}`,
     method: "GET",
     data: payload,
   });

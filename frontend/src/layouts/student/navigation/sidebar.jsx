@@ -3,14 +3,7 @@ import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
 import { Box, IconButton, Typography, useTheme } from "@mui/material";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
-import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
-import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
-import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
-import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
-import PieChartOutlineOutlinedIcon from "@mui/icons-material/PieChartOutlineOutlined";
-import TimelineOutlinedIcon from "@mui/icons-material/TimelineOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import { tokens } from "../../../themes/theme";
 import logo from "../../../assets/imgs/small45.png";
 
@@ -120,23 +113,6 @@ const AppSider = ({ onMenuItemClick }) => {
               selected={selected}
               setSelected={setSelected}
             />
-            <SubMenu label="Thông tin cá nhân" icon={<PersonOutlinedIcon />}>
-              <Item
-                title="Quản lý tài khoản"
-                to="/manageAccounts"
-                icon={<PeopleOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-                onClickKey={() => onMenuItemClick({ key: "manageAccounts" })}
-              />
-              <Item
-                title="Mật khẩu"
-                to="/changePassword"
-                // icon={<ContactsOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-            </SubMenu>
 
             <Item
               title="Lịch học"
@@ -146,13 +122,6 @@ const AppSider = ({ onMenuItemClick }) => {
               setSelected={setSelected}
               onClickKey={() => onMenuItemClick({ key: "manageStudents" })}
             />
-            {/* <Item
-                title="Calendar"
-                to="/calendar"
-                icon={<CalendarTodayOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              /> */}
 
             <SubMenu label="Học tập">
               <Item
@@ -165,24 +134,15 @@ const AppSider = ({ onMenuItemClick }) => {
               <Item
                 title="Bảng điểm"
                 to="/record"
-                // icon={<PieChartOutlineOutlinedIcon />}
-                selected={selected}
-                setSelected={setSelected}
-              />
-              {/* <Item
-                title="Line Chart"
-                to="/line"
-                icon={<TimelineOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
               />
               <Item
-                title="Geography Chart"
-                to="/geography"
-                icon={<MapOutlinedIcon />}
+                title="Đánh giá học tập"
+                to="/reviews"
                 selected={selected}
                 setSelected={setSelected}
-              /> */}
+              />
             </SubMenu>
 
             <SubMenu label="Học phí">
@@ -192,7 +152,7 @@ const AppSider = ({ onMenuItemClick }) => {
                 // icon={<TimelineOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
-                onClickKey={() => onMenuItemClick({ key: "manageParents" })}
+                onClickKey={() => onMenuItemClick({ key: "manageBills" })}
               />
               <Item
                 title="Lịch sử thanh toán"
@@ -200,6 +160,9 @@ const AppSider = ({ onMenuItemClick }) => {
                 // icon={<MapOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
+                onClickKey={() =>
+                  onMenuItemClick({ key: "manageBillsHistory" })
+                }
               />
             </SubMenu>
           </Box>

@@ -82,6 +82,24 @@ const AppSider = ({ onMenuItemClick }) => {
             onMenuItemClick({ key: "manageStudents" });
           },
         },
+        {
+          title: "Quản lý kết quả học tập",
+          icon: <PeopleOutlined />,
+          key: "manageLearningOutcomes",
+          onClick: () => {
+            setSelected("Quản lý kết quả học tập");
+            onMenuItemClick({ key: "manageLearningOutcomes" });
+          },
+        },
+        {
+          title: "Quản lý nhận xét",
+          icon: <PeopleOutlined />,
+          key: "manageAdminReviews",
+          onClick: () => {
+            setSelected("Quản lý nhận xét");
+            onMenuItemClick({ key: "manageAdminReviews" });
+          },
+        },
       ],
     },
     {

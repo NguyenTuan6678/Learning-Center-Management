@@ -11,6 +11,8 @@ import "./index.css";
 import { CssBaseline, ThemeProvider } from "@mui/material";
 import ManageAccounts from "./page/account.list";
 import ManageParents from "./page/parent.list";
+import StudentBills from "./page/student.bill";
+import PaidAndCancelledBills from "./page/student.bill.history";
 
 const componentMap = {
   dashboard: () => (
@@ -21,9 +23,8 @@ const componentMap = {
       Dashboard Content
     </div>
   ),
-  manageStudents: () => <ManageStudents />,
-  manageAccounts: () => <ManageAccounts />,
-  manageParents: () => <ManageParents />,
+  manageBills: () => <StudentBills />,
+  manageBillsHistory: () => <PaidAndCancelledBills />,
 };
 
 const StudentDashboard = () => {
