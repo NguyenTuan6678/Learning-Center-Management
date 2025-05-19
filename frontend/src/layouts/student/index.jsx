@@ -1,18 +1,16 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Layout } from "antd";
-import AppHeader from "./navigation/topbar";
-import AppFooter from "./navigation/footer";
-import AppContent from "./navigation/content";
+import AppHeader1 from "./navigation/topbar";
+import AppFooter1 from "./navigation/footer";
+import AppContent1 from "./navigation/content";
 import BreadCrumb from "../../components/breadcrumbs";
-import ManageStudents from "./page/student.list";
-import AppSider from "./navigation/sidebar";
+import AppSider1 from "./navigation/sidebar";
 import { ColorModeContext, useMode } from "../../themes/theme";
 import "./index.css";
 import { CssBaseline, ThemeProvider } from "@mui/material";
-import ManageAccounts from "./page/account.list";
-import ManageParents from "./page/parent.list";
 import StudentBills from "./page/student.bill";
 import PaidAndCancelledBills from "./page/student.bill.history";
+import StudentEnrollment from "./page/reg.class";
 
 const componentMap = {
   dashboard: () => (
@@ -25,6 +23,7 @@ const componentMap = {
   ),
   manageBills: () => <StudentBills />,
   manageBillsHistory: () => <PaidAndCancelledBills />,
+  enrollmentClass: () => <StudentEnrollment />,
 };
 
 const StudentDashboard = () => {
@@ -72,13 +71,13 @@ const StudentDashboard = () => {
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <div className="app">
-          <AppSider
+          <AppSider1
             onMenuItemClick={handleMenuItemClick}
             selectedKeys={[selectedMenuItem]}
             isSidebar={isSidebar}
           />
           <main className="content">
-            <AppHeader setIsSidebar={setIsSidebar} />
+            <AppHeader1 setIsSidebar={setIsSidebar} />
             <Layout
               style={{
                 minHeight: "91vh",
@@ -88,8 +87,8 @@ const StudentDashboard = () => {
               }}
             >
               <BreadCrumb selectedMenuItem={selectedMenuItem} />
-              <AppContent>{renderContent()}</AppContent>
-              <AppFooter
+              <AppContent1>{renderContent()}</AppContent1>
+              <AppFooter1
                 style={{ textAlign: "right", padding: "0 16px 24px" }}
               />
             </Layout>

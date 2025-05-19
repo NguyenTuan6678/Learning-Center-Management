@@ -25,6 +25,7 @@ import HomePage from "../screens/home/home.screen";
 import { useSelector } from "react-redux";
 import AdminDashboard from "../layouts/admin";
 import StudentDashboard from "../layouts/student";
+import TeacherDashboard from "../layouts/teacher";
 
 function isLoggedIn() {
   return getLocalData(isLoggedInText);
@@ -138,6 +139,14 @@ function MainRoutes() {
           element={
             <RoleBasedRoute allowedRoles={[student]}>
               <StudentDashboard />
+            </RoleBasedRoute>
+          }
+        />
+        <Route
+          path="/teacher"
+          element={
+            <RoleBasedRoute allowedRoles={[teacher]}>
+              <TeacherDashboard />
             </RoleBasedRoute>
           }
         />

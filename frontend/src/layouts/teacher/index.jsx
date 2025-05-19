@@ -1,33 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import AppHeader from "./navigation/topbar";
 import AppFooter from "./navigation/footer";
 import AppContent from "./navigation/content";
 import BreadCrumb from "../../components/breadcrumbs";
-import ManageStudents from "./page/student.list";
 import AppSider from "./navigation/sidebar";
 import { ColorModeContext, useMode } from "../../themes/theme";
-import ManageAccounts from "./page/account.list";
-import ManageParents from "./page/parent.list";
-import ManageBills from "./page/bill.list";
-import ManageAdminLearningOutcomes from "./page/student.learningoutcome";
-import ManageTeachers from "./page/teacher.list";
-import ManageCourses from "./page/course.list";
-import ManageClasses from "./page/class.list";
+import TeacherClasses from "./page/teacher.list";
 
 const componentMap = {
   dashboard: () => <Box sx={{ p: 3, minHeight: 360 }}>Dashboard Content</Box>,
-  manageStudents: () => <ManageStudents />,
-  manageAccounts: () => <ManageAccounts />,
-  manageParents: () => <ManageParents />,
-  manageBills: () => <ManageBills />,
-  manageLearningOutcomes: () => <ManageAdminLearningOutcomes />,
-  manageTeachers: () => <ManageTeachers />,
-  manageCourses: () => <ManageCourses />,
-  manageClasses: () => <ManageClasses />,
+  teacherClasses: () => <TeacherClasses />,
 };
 
-const AdminDashboard = () => {
+const TeacherDashboard = () => {
   const [theme, colorMode] = useMode();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard");
@@ -93,4 +79,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard;
+export default TeacherDashboard;

@@ -1,10 +1,9 @@
-import React from "react";
 import { Layout } from "antd";
 import { theme } from "antd";
 
 const { Content } = Layout;
 
-const AppContent = ({ children }) => {
+const AppContent1 = ({ children }) => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
@@ -17,9 +16,9 @@ const AppContent = ({ children }) => {
           minHeight: 360,
           background: colorBgContainer,
           borderRadius: borderRadiusLG,
-          maxWidth: "1200px", // hoặc 100%, hoặc 90vw
-          margin: "0 auto", // căn giữa
-          overflowX: "auto", // phòng trường hợp có bảng rộng
+          maxWidth: "1200px",
+          margin: "0 auto",
+          overflowX: "auto",
         }}
       >
         {children}
@@ -28,4 +27,4 @@ const AppContent = ({ children }) => {
   );
 };
 
-export default AppContent;
+export default AppContent1;

@@ -55,122 +55,122 @@ const AppSider = ({ onMenuItemClick }) => {
       },
     },
     {
-      title: "Tài khoản",
+      title: "Quản lý lớp học",
       icon: <PersonOutlined />,
       submenu: [
         {
-          title: "Quản lý tài khoản",
+          title: "Lớp đang dạy",
           icon: <PeopleOutlined />,
           key: "manageAccounts",
           onClick: () => {
-            setSelected("Quản lý tài khoản");
-            onMenuItemClick({ key: "manageAccounts" });
+            setSelected("Lớp đang dạy");
+            onMenuItemClick({ key: "teacherClasses" });
           },
         },
       ],
     },
     {
-      title: "Môn học & Lớp học",
+      title: "Quản lý học sinh",
       icon: <PersonOutlined />,
       submenu: [
         {
-          title: "Quản lý môn học",
+          title: "Đánh giá học tập",
           icon: <PeopleOutlined />,
           key: "manageCourses",
           onClick: () => {
-            setSelected("Quản lý môn học");
-            onMenuItemClick({ key: "manageCourses" });
+            setSelected("Đánh giá học tập");
+            // onMenuItemClick({ key: "manageCourses" });
           },
         },
         {
-          title: "Quản lý lớp học",
+          title: "Đánh giá nhận xét",
           icon: <PeopleOutlined />,
           key: "manageClasses",
           onClick: () => {
-            setSelected("Quản lý lớp học");
-            onMenuItemClick({ key: "manageClasses" });
+            setSelected("Đánh giá nhận xét");
+            // onMenuItemClick({ key: "manageClasses" });
           },
         },
       ],
     },
-    {
-      title: "Học sinh",
-      icon: <PeopleOutlined />,
-      submenu: [
-        {
-          title: "Quản lý học sinh",
-          icon: <PeopleOutlined />,
-          key: "manageStudents",
-          onClick: () => {
-            setSelected("Quản lý học sinh");
-            onMenuItemClick({ key: "manageStudents" });
-          },
-        },
-        {
-          title: "Quản lý kết quả học tập",
-          icon: <PeopleOutlined />,
-          key: "manageLearningOutcomes",
-          onClick: () => {
-            setSelected("Quản lý kết quả học tập");
-            onMenuItemClick({ key: "manageLearningOutcomes" });
-          },
-        },
-        {
-          title: "Quản lý nhận xét",
-          icon: <PeopleOutlined />,
-          key: "manageAdminReviews",
-          onClick: () => {
-            setSelected("Quản lý nhận xét");
-            onMenuItemClick({ key: "manageLearningOutcomes" });
-          },
-        },
-      ],
-    },
-    {
-      title: "Giáo viên",
-      icon: <PeopleOutlined />,
-      submenu: [
-        {
-          title: "Quản lý giáo viên",
-          icon: <PeopleOutlined />,
-          key: "manageTeachers",
-          onClick: () => {
-            setSelected("Quản lý giáo viên");
-            onMenuItemClick({ key: "manageTeachers" });
-          },
-        },
-      ],
-    },
-    {
-      title: "Phụ huynh",
-      icon: <PeopleOutlined />,
-      submenu: [
-        {
-          title: "Quản lý phụ huynh",
-          icon: <PeopleOutlined />,
-          key: "manageParents",
-          onClick: () => {
-            setSelected("Quản lý phụ huynh");
-            onMenuItemClick({ key: "manageParents" });
-          },
-        },
-      ],
-    },
-    {
-      title: "Hoá đơn",
-      icon: <PeopleOutlined />,
-      submenu: [
-        {
-          title: "Quản lý hoá đơn",
-          icon: <PeopleOutlined />,
-          key: "manageBills",
-          onClick: () => {
-            setSelected("Quản lý hoá đơn");
-            onMenuItemClick({ key: "manageBills" });
-          },
-        },
-      ],
-    },
+    // {
+    //   title: "Học sinh",
+    //   icon: <PeopleOutlined />,
+    //   submenu: [
+    //     {
+    //       title: "Quản lý học sinh",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageStudents",
+    //       onClick: () => {
+    //         setSelected("Quản lý học sinh");
+    //         onMenuItemClick({ key: "manageStudents" });
+    //       },
+    //     },
+    //     {
+    //       title: "Quản lý kết quả học tập",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageLearningOutcomes",
+    //       onClick: () => {
+    //         setSelected("Quản lý kết quả học tập");
+    //         onMenuItemClick({ key: "manageLearningOutcomes" });
+    //       },
+    //     },
+    //     {
+    //       title: "Quản lý nhận xét",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageAdminReviews",
+    //       onClick: () => {
+    //         setSelected("Quản lý nhận xét");
+    //         onMenuItemClick({ key: "manageAdminReviews" });
+    //       },
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Giáo viên",
+    //   icon: <PeopleOutlined />,
+    //   submenu: [
+    //     {
+    //       title: "Quản lý giáo viên",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageTeachers",
+    //       onClick: () => {
+    //         setSelected("Quản lý giáo viên");
+    //         onMenuItemClick({ key: "manageTeachers" });
+    //       },
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Phụ huynh",
+    //   icon: <PeopleOutlined />,
+    //   submenu: [
+    //     {
+    //       title: "Quản lý phụ huynh",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageParents",
+    //       onClick: () => {
+    //         setSelected("Quản lý phụ huynh");
+    //         onMenuItemClick({ key: "manageParents" });
+    //       },
+    //     },
+    //   ],
+    // },
+    // {
+    //   title: "Hoá đơn",
+    //   icon: <PeopleOutlined />,
+    //   submenu: [
+    //     {
+    //       title: "Quản lý hoá đơn",
+    //       icon: <PeopleOutlined />,
+    //       key: "manageBills",
+    //       onClick: () => {
+    //         setSelected("Quản lý hoá đơn");
+    //         onMenuItemClick({ key: "manageBills" });
+    //       },
+    //     },
+    //   ],
+    // },
   ];
 
   return (
@@ -210,7 +210,7 @@ const AppSider = ({ onMenuItemClick }) => {
           <Box display="flex" alignItems="center" gap={1}>
             <img src={logo} alt="Logo" style={{ width: 30, height: 30 }} />
             <Typography variant="h3" color={colors.grey[100]}>
-              ADMIN
+              TEACHER
             </Typography>
           </Box>
         )}
@@ -233,12 +233,8 @@ const AppSider = ({ onMenuItemClick }) => {
             color={colors.grey[100]}
             fontWeight="bold"
             sx={{ mt: 1 }}
-          >
-            Harry Nguyen
-          </Typography>
-          <Typography variant="h5" color={colors.greenAccent[500]}>
-            Admin
-          </Typography>
+          ></Typography>
+          <Typography variant="h5" color={colors.greenAccent[500]}></Typography>
         </Box>
       )}
 

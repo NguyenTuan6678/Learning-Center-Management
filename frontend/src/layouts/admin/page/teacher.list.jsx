@@ -24,33 +24,32 @@ import {
   CardActions,
   CardContent,
   CardHeader,
-  Select,
-  MenuItem,
   FormControl,
   InputLabel,
-  FormHelperText,
+  MenuItem,
+  Select,
 } from "@mui/material";
 import {
-  Add as AddIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   Search as SearchIcon,
   Upload as UploadIcon,
+  Add as AddIcon,
 } from "@mui/icons-material";
 import {
-  getall as getallStudents,
-  deleteStudent,
+  getall,
+  deleteTeacher,
   create,
-  update,
   search,
   upload as uploadExcel,
-  getAvailableAccounts,
-} from "../../../services/student.service.jsx";
+} from "../../../services/teacher.service.jsx"; // Updated import
+// import AddTeacherDrawer from "../../../components/drawers/AddTeacherDrawer"; // Removed
 import { debounce } from "lodash";
 
-const ManageStudents = () => {
+const ManageTeachers = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false); // Not used, but keep for consistency
   const [searchText, setSearchText] = useState("");
   const [paginationInfo, setPaginationInfo] = useState({
     page: 0,
@@ -65,26 +64,23 @@ const ManageStudents = () => {
   });
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
-    studentId: null,
-    studentName: "",
+    teacherId: null,
+    teacherName: "",
   });
   const [editDialog, setEditDialog] = useState({
+    // Add state for edit dialog
     open: false,
-    student: null,
-    availableAccounts: [],
-    loadingAccounts: false,
+    teacher: null,
   });
 
-  const [newStudentForm, setNewStudentForm] = useState({
+  const [newTeacherForm, setNewTeacherForm] = useState({
     name: "",
     email: "",
-    phoneNumber: "",
-    accountId: "",
-    parentId: "",
+    phone: "",
   });
-  const [newStudentErrors, setNewStudentErrors] = useState({});
+  const [newTeacherErrors, setNewTeacherErrors] = useState({});
   const [isCreating, setIsCreating] = useState(false);
-  const [showCreateCard, setShowCreateCard] = useState(false);
+  const [showCreateCard, setShowCreateCard] = useState(false); // State to show/hide the create card
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -94,14 +90,14 @@ const ManageStudents = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const fetchStudents = async (page = 0, rowsPerPage = 10) => {
+  const fetchTeachers = async (page = 0, rowsPerPage = 10) => {
     setLoading(true);
     try {
-      const res = await getallStudents({ page, size: rowsPerPage });
-      const students = res?.data?.rows || [];
+      const res = await getall({ page, size: rowsPerPage });
+      const teachers = res?.data?.rows || [];
       setDataSource(
-        students.map((item, index) => ({
-          id: item.studentId || `student-${index}`,
+        teachers.map((item, index) => ({
+          id: item.teacherId || `teacher-${index}`,
           ...item,
         }))
       );
@@ -111,38 +107,38 @@ const ManageStudents = () => {
         total: res?.data?.count || 0,
       });
     } catch (error) {
-      console.error("Failed to fetch students:", error);
-      showSnackbar("Lỗi khi tải danh sách sinh viên", "error");
+      console.error("Failed to fetch teachers:", error);
+      showSnackbar("Lỗi khi tải danh sách giáo viên", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChangePage = (event, newPage) => {
-    fetchStudents(newPage, paginationInfo.rowsPerPage);
+    fetchTeachers(newPage, paginationInfo.rowsPerPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const rowsPerPage = parseInt(event.target.value, 10);
-    fetchStudents(0, rowsPerPage);
+    fetchTeachers(0, rowsPerPage);
   };
 
   const handleDeleteClick = (id, name) => {
     setDeleteDialog({
       open: true,
-      studentId: id,
-      studentName: name,
+      teacherId: id,
+      teacherName: name,
     });
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await deleteStudent(deleteDialog.studentId);
-      showSnackbar("Xóa sinh viên thành công!");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
+      await deleteTeacher(deleteDialog.teacherId);
+      showSnackbar("Xóa giáo viên thành công!");
+      fetchTeachers(paginationInfo.page, paginationInfo.rowsPerPage);
     } catch (error) {
       console.error("Xóa thất bại:", error);
-      showSnackbar("Xóa sinh viên thất bại!", "error");
+      showSnackbar("Xóa giáo viên thất bại!", "error");
     } finally {
       setDeleteDialog({ ...deleteDialog, open: false });
     }
@@ -152,53 +148,34 @@ const ManageStudents = () => {
     setDeleteDialog({ ...deleteDialog, open: false });
   };
 
-  const handleEditClick = async (student) => {
-    try {
-      setEditDialog({
-        open: true,
-        student,
-        availableAccounts: [],
-        loadingAccounts: true,
-      });
-
-      // Lấy danh sách tài khoản STUDENT chưa được gán
-      const res = await getAvailableAccounts();
-      setEditDialog((prev) => ({
-        ...prev,
-        availableAccounts: res.data || [],
-        loadingAccounts: false,
-      }));
-    } catch (error) {
-      console.error("Lỗi khi lấy danh sách tài khoản:", error);
-      showSnackbar("Lỗi khi lấy danh sách tài khoản", "error");
-      setEditDialog((prev) => ({ ...prev, loadingAccounts: false }));
-    }
+  const handleEditClick = (teacher) => {
+    setEditDialog({
+      open: true,
+      teacher: { ...teacher }, // Create a copy to avoid direct mutation
+    });
   };
 
-  const handleUpdateStudent = async () => {
+  const handleUpdateTeacher = async () => {
     try {
-      const { student } = editDialog;
-      await update(student.id, {
-        name: student.name,
-        phoneNumber: student.phoneNumber,
-        email: student.email,
-        accountId: student.accountId,
-        parentId: student.parentId || "",
-      });
-      showSnackbar("Cập nhật sinh viên thành công!");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-      setEditDialog({ ...editDialog, open: false });
+      setLoading(true);
+      // Assuming you have an updateTeacher API in teacher.service.js
+      // await updateTeacher(editDialog.teacher.id, editDialog.teacher);
+      showSnackbar("Cập nhật giáo viên thành công!");
+      fetchTeachers(paginationInfo.page, paginationInfo.rowsPerPage);
+      setEditDialog({ open: false, teacher: null });
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
-      showSnackbar("Cập nhật sinh viên thất bại!", "error");
+      showSnackbar("Cập nhật giáo viên thất bại!", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleEditInputChange = (field, value) => {
     setEditDialog((prev) => ({
       ...prev,
-      student: {
-        ...prev.student,
+      teacher: {
+        ...prev.teacher,
         [field]: value,
       },
     }));
@@ -207,10 +184,10 @@ const ManageStudents = () => {
   const handleSearch = async (name) => {
     try {
       const res = await search(name);
-      const students = res?.data || [];
+      const teachers = res?.data || [];
       setDataSource(
-        students.map((item, index) => ({
-          id: item.studentId || `student-${index}`,
+        teachers.map((item, index) => ({
+          id: item.teacherId || `teacher-${index}`,
           ...item,
         }))
       );
@@ -223,24 +200,19 @@ const ManageStudents = () => {
   };
 
   const handleCreate = async () => {
-    if (!validateNewStudentForm()) {
+    if (!validateNewTeacherForm()) {
       return;
     }
     try {
       setIsCreating(true);
-      await create(newStudentForm);
-      showSnackbar("Thêm sinh viên thành công!");
-      setNewStudentForm({
-        name: "",
-        email: "",
-        phoneNumber: "",
-        accountId: "",
-      });
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-      setShowCreateCard(false);
+      await create(newTeacherForm);
+      showSnackbar("Thêm giáo viên thành công!");
+      setNewTeacherForm({ name: "", email: "", phone: "" }); // Reset form
+      fetchTeachers(paginationInfo.page, paginationInfo.rowsPerPage);
+      setShowCreateCard(false); // Hide create card after successful creation
     } catch (error) {
       console.error("Thêm thất bại:", error);
-      showSnackbar("Thêm sinh viên thất bại!", "error");
+      showSnackbar("Thêm giáo viên thất bại!", "error");
     } finally {
       setIsCreating(false);
     }
@@ -260,7 +232,6 @@ const ManageStudents = () => {
       showSnackbar("Chỉ chấp nhận file Excel (.xls, .xlsx)", "error");
       return;
     }
-
     setSelectedFile(file);
   };
 
@@ -275,7 +246,7 @@ const ManageStudents = () => {
       const response = await uploadExcel(selectedFile);
       console.log("uploadExcel response:", response);
       showSnackbar(response.data.message || "Tải lên thành công");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
+      fetchTeachers(paginationInfo.page, paginationInfo.rowsPerPage);
     } catch (error) {
       console.error("Upload error:", error);
       if (error.response) {
@@ -299,45 +270,53 @@ const ManageStudents = () => {
     debouncedSearch(value);
   };
 
-  const handleNewStudentInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewStudentForm({ ...newStudentForm, [name]: value });
-    setNewStudentErrors({ ...newStudentErrors, [name]: "" });
+  const showDrawer = () => {
+    setOpenDrawer(true);
   };
 
-  const validateNewStudentForm = () => {
+  const closeDrawer = () => {
+    setOpenDrawer(false);
+  };
+
+  const handleNewTeacherInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewTeacherForm({ ...newTeacherForm, [name]: value });
+    setNewTeacherErrors({ ...newTeacherErrors, [name]: "" }); // Clear errors
+  };
+
+  const validateNewTeacherForm = () => {
     let isValid = true;
     const newErrors = {};
 
-    if (!newStudentForm.name.trim()) {
-      newErrors.name = "Vui lòng nhập tên sinh viên!";
+    if (!newTeacherForm.name.trim()) {
+      newErrors.name = "Vui lòng nhập tên giáo viên!";
       isValid = false;
     }
 
-    if (!newStudentForm.email.trim()) {
+    if (!newTeacherForm.email.trim()) {
       newErrors.email = "Vui lòng nhập email!";
       isValid = false;
     } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(newStudentForm.email)
+      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(newTeacherForm.email)
     ) {
       newErrors.email = "Email không hợp lệ!";
       isValid = false;
     }
 
-    if (!newStudentForm.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Vui lòng nhập số điện thoại!";
+    if (!newTeacherForm.phone.trim()) {
+      newErrors.phone = "Vui lòng nhập số điện thoại!";
       isValid = false;
-    } else if (!/^\d{10}$/.test(newStudentForm.phoneNumber)) {
-      newErrors.phoneNumber = "Số điện thoại không hợp lệ!";
+    } else if (!/^\d{10}$/.test(newTeacherForm.phone)) {
+      newErrors.phone = "Số điện thoại không hợp lệ!";
       isValid = false;
     }
 
-    setNewStudentErrors(newErrors);
+    setNewTeacherErrors(newErrors);
     return isValid;
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchTeachers();
   }, []);
 
   return (
@@ -345,11 +324,11 @@ const ManageStudents = () => {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "space-between", // Push button to the right
           alignItems: "center",
-          gap: "12px",
+          gap: "12px", // Add some gap
           marginBottom: "16px",
-          flexWrap: "wrap",
+          flexWrap: "wrap", // Allow wrapping on smaller screens
         }}
       >
         <TextField
@@ -365,7 +344,7 @@ const ManageStudents = () => {
           }}
           variant="outlined"
           size="small"
-          style={{ width: 250 }}
+          style={{ width: 250 }} // Add a width, adjust as needed
         />
 
         <Button
@@ -393,46 +372,45 @@ const ManageStudents = () => {
         </Button>
         <Button
           variant="contained"
-          onClick={() => setShowCreateCard(!showCreateCard)}
+          onClick={() => setShowCreateCard(!showCreateCard)} // Toggle hiển thị thẻ
           color="primary"
           startIcon={<AddIcon />}
         >
-          {showCreateCard ? "Ẩn Thêm Sinh Viên" : "Thêm Sinh Viên"}
+          {showCreateCard ? "Ẩn Thêm Giáo Viên" : "Thêm Giáo Viên"}
         </Button>
       </div>
-
       {showCreateCard && (
         <Card sx={{ marginBottom: "20px" }}>
-          <CardHeader title="Thêm Sinh Viên Mới" />
+          <CardHeader title="Thêm Giáo Viên Mới" />
           <CardContent>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
               <TextField
-                label="Họ và tên"
+                label="Tên giáo viên"
                 name="name"
-                value={newStudentForm.name}
-                onChange={handleNewStudentInputChange}
-                error={!!newStudentErrors.name}
-                helperText={newStudentErrors.name}
+                value={newTeacherForm.name}
+                onChange={handleNewTeacherInputChange}
+                error={!!newTeacherErrors.name}
+                helperText={newTeacherErrors.name}
                 fullWidth
               />
               <TextField
                 label="Email"
                 name="email"
-                value={newStudentForm.email}
-                onChange={handleNewStudentInputChange}
-                error={!!newStudentErrors.email}
-                helperText={newStudentErrors.email}
+                value={newTeacherForm.email}
+                onChange={handleNewTeacherInputChange}
+                error={!!newTeacherErrors.email}
+                helperText={newTeacherErrors.email}
                 fullWidth
               />
               <TextField
                 label="Số điện thoại"
-                name="phoneNumber"
-                value={newStudentForm.phoneNumber}
-                onChange={handleNewStudentInputChange}
-                error={!!newStudentErrors.phoneNumber}
-                helperText={newStudentErrors.phoneNumber}
+                name="phone"
+                value={newTeacherForm.phone}
+                onChange={handleNewTeacherInputChange}
+                error={!!newTeacherErrors.phone}
+                helperText={newTeacherErrors.phone}
                 fullWidth
               />
             </div>
@@ -473,21 +451,19 @@ const ManageStudents = () => {
           },
         }}
       >
-        <Table stickyHeader aria-label="student table" sx={{ minWidth: 800 }}>
+        <Table stickyHeader aria-label="teacher table" sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell>STT</TableCell>
               <TableCell>ID</TableCell>
               <TableCell>Họ tên</TableCell>
-              <TableCell>Số điện thoại</TableCell>
-              <TableCell>Email</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={4} align="center">
                   <CircularProgress />
                 </TableCell>
               </TableRow>
@@ -501,8 +477,6 @@ const ManageStudents = () => {
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.phoneNumber}</TableCell>
-                  <TableCell>{row.email}</TableCell>
                   <TableCell>
                     <IconButton
                       onClick={() => handleDeleteClick(row.id, row.name)}
@@ -518,7 +492,7 @@ const ManageStudents = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={6} align="center">
+                <TableCell colSpan={4} align="center">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>
@@ -538,6 +512,12 @@ const ManageStudents = () => {
         labelRowsPerPage="Số hàng mỗi trang:"
       />
 
+      {/* <AddTeacherDrawer  Removed */}
+      {/* open={openDrawer}
+        onClose={closeDrawer}
+        onCreate={handleCreate}
+      /> */}
+
       {/* Dialog xác nhận xóa */}
       <Dialog
         open={deleteDialog.open}
@@ -548,9 +528,9 @@ const ManageStudents = () => {
         <DialogTitle id="alert-dialog-title">Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Bạn có chắc chắn muốn xóa sinh viên{" "}
-            <strong>{deleteDialog.studentName}</strong> (ID:{" "}
-            {deleteDialog.studentId}) không?
+            Bạn có chắc chắn muốn xóa giáo viên{" "}
+            <strong>{deleteDialog.teacherName}</strong> (ID:{" "}
+            {deleteDialog.teacherId}) không?
             <br />
             Hành động này không thể hoàn tác.
           </DialogContentText>
@@ -566,72 +546,32 @@ const ManageStudents = () => {
       {/* Edit Dialog */}
       <Dialog
         open={editDialog.open}
-        onClose={() => setEditDialog({ open: false, student: null })}
+        onClose={() => setEditDialog({ open: false, teacher: null })}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Chỉnh sửa thông tin học sinh</DialogTitle>
+        <DialogTitle>Chỉnh sửa thông tin giáo viên</DialogTitle>
         <DialogContent>
-          {editDialog.student && (
+          {editDialog.teacher && (
             <div style={{ marginTop: "16px", display: "grid", gap: "16px" }}>
               <TextField
                 label="Họ và tên"
                 fullWidth
-                value={editDialog.student.name || ""}
+                value={editDialog.teacher.name || ""}
                 onChange={(e) => handleEditInputChange("name", e.target.value)}
               />
-              <TextField
-                label="Số điện thoại"
-                fullWidth
-                value={editDialog.student.phoneNumber || ""}
-                onChange={(e) =>
-                  handleEditInputChange("phoneNumber", e.target.value)
-                }
-              />
-              <TextField
-                label="Email"
-                fullWidth
-                value={editDialog.student.email || ""}
-                onChange={(e) => handleEditInputChange("email", e.target.value)}
-              />
-
-              <FormControl fullWidth>
-                <InputLabel id="account-select-label">Tài khoản</InputLabel>
-                <Select
-                  labelId="account-select-label"
-                  value={editDialog.student.accountId || ""}
-                  onChange={(e) =>
-                    handleEditInputChange("accountId", e.target.value)
-                  }
-                  label="Tài khoản"
-                >
-                  <MenuItem value="">
-                    <em>Không chọn tài khoản</em>
-                  </MenuItem>
-                  {editDialog.loadingAccounts ? (
-                    <MenuItem disabled>
-                      <CircularProgress size={20} />
-                    </MenuItem>
-                  ) : (
-                    editDialog.availableAccounts.map((account) => (
-                      <MenuItem key={account.id} value={account.id}>
-                        {account.username} ({account.email})
-                      </MenuItem>
-                    ))
-                  )}
-                </Select>
-              </FormControl>
+              {/* Add other fields as necessary */}
             </div>
           )}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setEditDialog({ ...editDialog, open: false })}
+            onClick={() => setEditDialog({ open: false, teacher: null })}
             color="secondary"
           >
             Hủy bỏ
           </Button>
-          <Button onClick={handleUpdateStudent} color="primary">
+          <Button onClick={handleUpdateTeacher} color="primary">
             Cập nhật
           </Button>
         </DialogActions>
@@ -654,4 +594,4 @@ const ManageStudents = () => {
   );
 };
 
-export default ManageStudents;
+export default ManageTeachers;

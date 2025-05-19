@@ -9,10 +9,8 @@ import { ColorModeContext, tokens } from "../../../themes/theme";
 
 import LightModeOutlinedIcon from "@mui/icons-material/LightModeOutlined";
 import DarkModeOutlinedIcon from "@mui/icons-material/DarkModeOutlined";
-import NotificationsOutlinedIcon from "@mui/icons-material/NotificationsOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 
-const AppHeader1 = () => {
+const AppHeader = () => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const colorMode = useContext(ColorModeContext);
@@ -53,12 +51,6 @@ const AppHeader1 = () => {
           <LightModeOutlinedIcon />
         )}
       </IconButton>
-      <IconButton>
-        <NotificationsOutlinedIcon />
-      </IconButton>
-      <IconButton>
-        <SettingsOutlinedIcon />
-      </IconButton>
       <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
         <Avatar icon={<UserOutlined />} />
       </Dropdown>
@@ -66,4 +58,4 @@ const AppHeader1 = () => {
   );
 };
 
-export default AppHeader1;
+export default AppHeader;

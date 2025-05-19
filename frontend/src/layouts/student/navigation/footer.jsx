@@ -1,9 +1,8 @@
-import React from "react";
 import { Layout } from "antd";
 
 const { Footer } = Layout;
 
-const AppFooter = () => {
+const AppFooter1 = () => {
   return (
     <Footer style={{ textAlign: "center" }}>
       ©{new Date().getFullYear()} Created by Harry Nguyen
@@ -11,4 +10,4 @@ const AppFooter = () => {
   );
 };
 
-export default AppFooter;
+export default AppFooter1;

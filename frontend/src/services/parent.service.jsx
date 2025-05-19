@@ -33,3 +33,20 @@ export const search = (payload) => {
     method: "GET",
   });
 };
+
+export const upload = (file) => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  console.log("File info:", {
+    name: file.name,
+    type: file.type,
+    size: file.size,
+  });
+
+  return api.makeRequest({
+    url: `/api/parent/upload`,
+    method: "POST",
+    data: formData,
+  });
+};

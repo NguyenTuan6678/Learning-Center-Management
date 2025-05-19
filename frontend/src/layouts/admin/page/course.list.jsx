@@ -30,18 +30,17 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   Search as SearchIcon,
-  Upload as UploadIcon,
 } from "@mui/icons-material";
 import {
-  getall,
-  deleteParent,
-  create,
-  search,
-  upload as uploadExcel,
-} from "../../../services/parent.service.jsx"; // Updated import
+  getAllCourses,
+  deleteCourse,
+  createCourse,
+  searchCourses,
+} from "../../../services/course.service";
+import { getClassesByCourse } from "../../../services/class.service";
 import { debounce } from "lodash";
 
-const ManageParents = () => {
+const ManageCourses = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -50,7 +49,6 @@ const ManageParents = () => {
     rowsPerPage: 10,
     total: 0,
   });
-  const [selectedFile, setSelectedFile] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -58,22 +56,26 @@ const ManageParents = () => {
   });
   const [deleteDialog, setDeleteDialog] = useState({
     open: false,
-    parentId: null,
-    parentName: "",
+    courseId: null,
+    courseName: "",
   });
   const [editDialog, setEditDialog] = useState({
     open: false,
-    parent: null,
+    course: null,
   });
 
-  const [newParentForm, setNewParentForm] = useState({
+  const [newCourseForm, setNewCourseForm] = useState({
     name: "",
-    email: "",
-    phone: "",
+    description: "",
   });
-  const [newParentErrors, setNewParentErrors] = useState({});
+  const [newCourseErrors, setNewCourseErrors] = useState({});
   const [isCreating, setIsCreating] = useState(false);
   const [showCreateCard, setShowCreateCard] = useState(false);
+  const [selectedCourseClasses, setSelectedCourseClasses] = useState([]);
+  const [classesDialog, setClassesDialog] = useState({
+    open: false,
+    courseName: "",
+  });
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -83,14 +85,14 @@ const ManageParents = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const fetchParents = async (page = 0, rowsPerPage = 10) => {
+  const fetchCourses = async (page = 0, rowsPerPage = 10) => {
     setLoading(true);
     try {
-      const res = await getall({ page, size: rowsPerPage });
-      const parents = res?.data?.rows || [];
+      const res = await getAllCourses({ page, size: rowsPerPage });
+      const courses = res?.data?.rows || [];
       setDataSource(
-        parents.map((item, index) => ({
-          id: item.parentId || `parent-${index}`,
+        courses.map((item, index) => ({
+          id: item.courseId || `course-${index}`,
           ...item,
         }))
       );
@@ -100,38 +102,38 @@ const ManageParents = () => {
         total: res?.data?.count || 0,
       });
     } catch (error) {
-      console.error("Failed to fetch parents:", error);
-      showSnackbar("Lỗi khi tải danh sách phụ huynh", "error");
+      console.error("Failed to fetch courses:", error);
+      showSnackbar("Lỗi khi tải danh sách môn học", "error");
     } finally {
       setLoading(false);
     }
   };
 
   const handleChangePage = (event, newPage) => {
-    fetchParents(newPage, paginationInfo.rowsPerPage);
+    fetchCourses(newPage, paginationInfo.rowsPerPage, searchText);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const rowsPerPage = parseInt(event.target.value, 10);
-    fetchParents(0, rowsPerPage);
+    fetchCourses(0, rowsPerPage, searchText);
   };
 
   const handleDeleteClick = (id, name) => {
     setDeleteDialog({
       open: true,
-      parentId: id,
-      parentName: name,
+      courseId: id,
+      courseName: name,
     });
   };
 
   const handleConfirmDelete = async () => {
     try {
-      await deleteParent(deleteDialog.parentId);
-      showSnackbar("Xóa phụ huynh thành công!");
-      fetchParents(paginationInfo.page, paginationInfo.rowsPerPage);
+      await deleteCourse(deleteDialog.courseId);
+      showSnackbar("Xóa môn học thành công!");
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
     } catch (error) {
       console.error("Xóa thất bại:", error);
-      showSnackbar("Xóa phụ huynh thất bại!", "error");
+      showSnackbar("Xóa môn học thất bại!", "error");
     } finally {
       setDeleteDialog({ ...deleteDialog, open: false });
     }
@@ -141,23 +143,23 @@ const ManageParents = () => {
     setDeleteDialog({ ...deleteDialog, open: false });
   };
 
-  const handleEditClick = (parent) => {
+  const handleEditClick = (course) => {
     setEditDialog({
       open: true,
-      parent: { ...parent },
+      course: { ...course },
     });
   };
 
-  const handleUpdateParent = async () => {
+  const handleUpdateCourse = async () => {
     try {
       setLoading(true);
-      // await updateParent(editDialog.parent.id, editDialog.parent); // Assuming updateParent API
-      showSnackbar("Cập nhật phụ huynh thành công!");
-      fetchParents(paginationInfo.page, paginationInfo.rowsPerPage);
-      setEditDialog({ open: false, parent: null });
+      await updateCourse(editDialog.course.id, editDialog.course);
+      showSnackbar("Cập nhật môn học thành công!");
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+      setEditDialog({ open: false, course: null });
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
-      showSnackbar("Cập nhật phụ huynh thất bại!", "error");
+      showSnackbar("Cập nhật môn học thất bại!", "error");
     } finally {
       setLoading(false);
     }
@@ -166,92 +168,16 @@ const ManageParents = () => {
   const handleEditInputChange = (field, value) => {
     setEditDialog((prev) => ({
       ...prev,
-      parent: {
-        ...prev.parent,
+      course: {
+        ...prev.course,
         [field]: value,
       },
     }));
   };
 
-  const handleSearch = async (name) => {
-    try {
-      const res = await search(name);
-      const parents = res?.data || [];
-      setDataSource(
-        parents.map((item, index) => ({
-          id: item.parentId || `parent-${index}`,
-          ...item,
-        }))
-      );
-    } catch (error) {
-      console.error("Tìm kiếm thất bại:", error);
-      showSnackbar("Tìm kiếm thất bại!", "error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleCreate = async () => {
-    if (!validateNewParentForm()) {
-      return;
-    }
-    try {
-      setIsCreating(true);
-      await create(newParentForm);
-      showSnackbar("Thêm phụ huynh thành công!");
-      setNewParentForm({ name: "", email: "", phone: "" });
-      fetchParents(paginationInfo.page, paginationInfo.rowsPerPage);
-      setShowCreateCard(false);
-    } catch (error) {
-      console.error("Thêm thất bại:", error);
-      showSnackbar("Thêm phụ huynh thất bại!", "error");
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const validTypes = [
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/octet-stream",
-    ];
-
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/)) {
-      showSnackbar("Chỉ chấp nhận file Excel (.xls, .xlsx)", "error");
-      return;
-    }
-    setSelectedFile(file);
-  };
-
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
-      showSnackbar("Vui lòng chọn file trước khi tải lên.", "warning");
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const response = await uploadExcel(selectedFile);
-      console.log("uploadExcel response:", response);
-      showSnackbar(response.data.message || "Tải lên thành công");
-      fetchParents(paginationInfo.page, paginationInfo.rowsPerPage);
-    } catch (error) {
-      console.error("Upload error:", error);
-      if (error.response) {
-        const errorMsg =
-          error.response.data?.message || error.response.data?.error;
-        showSnackbar(errorMsg || "Upload thất bại", "error");
-      } else {
-        showSnackbar("Lỗi kết nối đến server", "error");
-      }
-    } finally {
-      setLoading(false);
-      setSelectedFile(null);
-    }
+  const handleSearch = (name) => {
+    setSearchText(name);
+    fetchCourses(0, paginationInfo.rowsPerPage, name);
   };
 
   const debouncedSearch = debounce(handleSearch, 500);
@@ -262,46 +188,61 @@ const ManageParents = () => {
     debouncedSearch(value);
   };
 
-  const handleNewParentInputChange = (e) => {
-    const { name, value } = e.target;
-    setNewParentForm({ ...newParentForm, [name]: value });
-    setNewParentErrors({ ...newParentErrors, [name]: "" });
+  const handleCreate = async () => {
+    if (!validateNewCourseForm()) {
+      return;
+    }
+    try {
+      setIsCreating(true);
+      await createCourse(newCourseForm);
+      showSnackbar("Thêm môn học thành công!");
+      setNewCourseForm({ name: "", description: "" });
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+      setShowCreateCard(false);
+    } catch (error) {
+      console.error("Thêm thất bại:", error);
+      showSnackbar("Thêm môn học thất bại!", "error");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
-  const validateNewParentForm = () => {
+  const handleNewCourseInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewCourseForm({ ...newCourseForm, [name]: value });
+    setNewCourseErrors({ ...newCourseErrors, [name]: "" });
+  };
+
+  const validateNewCourseForm = () => {
     let isValid = true;
     const newErrors = {};
 
-    if (!newParentForm.name.trim()) {
-      newErrors.name = "Vui lòng nhập tên phụ huynh!";
+    if (!newCourseForm.name.trim()) {
+      newErrors.name = "Vui lòng nhập tên môn học!";
       isValid = false;
     }
 
-    if (!newParentForm.email.trim()) {
-      newErrors.email = "Vui lòng nhập email!";
-      isValid = false;
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(newParentForm.email)
-    ) {
-      newErrors.email = "Email không hợp lệ!";
-      isValid = false;
-    }
-
-    if (!newParentForm.phone.trim()) {
-      newErrors.phone = "Vui lòng nhập số điện thoại!";
-      isValid = false;
-    } else if (!/^\d{10}$/.test(newParentForm.phone)) {
-      newErrors.phone = "Số điện thoại không hợp lệ!";
-      isValid = false;
-    }
-
-    setNewParentErrors(newErrors);
+    setNewCourseErrors(newErrors);
     return isValid;
   };
 
   useEffect(() => {
-    fetchParents();
+    fetchCourses();
   }, []);
+
+  const handleCourseRowClick = async (courseId, courseName) => {
+    setLoading(true);
+    try {
+      const classesData = await getClassesByCourse(courseId);
+      setSelectedCourseClasses(classesData.data);
+      setClassesDialog({ open: true, courseName: courseName });
+    } catch (error) {
+      console.error("Failed to fetch classes for course:", error);
+      showSnackbar("Lỗi khi tải danh sách lớp học", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={{ width: "100%", padding: "20px" }}>
@@ -333,68 +274,34 @@ const ManageParents = () => {
 
         <Button
           variant="contained"
-          component="label"
-          startIcon={<UploadIcon />}
-          disabled={loading}
-        >
-          Chọn file Excel
-          <input
-            type="file"
-            hidden
-            accept=".xls,.xlsx"
-            onChange={handleFileChange}
-          />
-        </Button>
-
-        <Button
-          variant="contained"
-          onClick={handleFileUpload}
-          disabled={!selectedFile || loading}
-          startIcon={loading ? <CircularProgress size={20} /> : null}
-        >
-          Thêm từ file .xls
-        </Button>
-        <Button
-          variant="contained"
           onClick={() => setShowCreateCard(!showCreateCard)}
           color="primary"
           startIcon={<AddIcon />}
         >
-          {showCreateCard ? "Ẩn Thêm Phụ Huynh" : "Thêm Phụ Huynh"}
+          {showCreateCard ? "Ẩn Thêm Môn Học" : "Thêm Môn Học"}
         </Button>
       </div>
       {showCreateCard && (
         <Card sx={{ marginBottom: "20px" }}>
-          <CardHeader title="Thêm Phụ Huynh Mới" />
+          <CardHeader title="Thêm Môn Học Mới" />
           <CardContent>
             <div
               style={{ display: "flex", flexDirection: "column", gap: "16px" }}
             >
               <TextField
-                label="Tên phụ huynh"
+                label="Tên môn học"
                 name="name"
-                value={newParentForm.name}
-                onChange={handleNewParentInputChange}
-                error={!!newParentErrors.name}
-                helperText={newParentErrors.name}
+                value={newCourseForm.name}
+                onChange={handleNewCourseInputChange}
+                error={!!newCourseErrors.name}
+                helperText={newCourseErrors.name}
                 fullWidth
               />
               <TextField
-                label="Email"
-                name="email"
-                value={newParentForm.email}
-                onChange={handleNewParentInputChange}
-                error={!!newParentErrors.email}
-                helperText={newParentErrors.email}
-                fullWidth
-              />
-              <TextField
-                label="Số điện thoại"
-                name="phone"
-                value={newParentForm.phone}
-                onChange={handleNewParentInputChange}
-                error={!!newParentErrors.phone}
-                helperText={newParentErrors.phone}
+                label="Mô tả"
+                name="description"
+                value={newCourseForm.description}
+                onChange={handleNewCourseInputChange}
                 fullWidth
               />
             </div>
@@ -435,25 +342,31 @@ const ManageParents = () => {
           },
         }}
       >
-        <Table stickyHeader aria-label="parent table" sx={{ minWidth: 800 }}>
+        <Table stickyHeader aria-label="course table" sx={{ minWidth: 800 }}>
           <TableHead>
             <TableRow>
               <TableCell>STT</TableCell>
               <TableCell>ID</TableCell>
-              <TableCell>Họ tên</TableCell>
+              <TableCell>Tên môn học</TableCell>
+              <TableCell>Mô tả</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   <CircularProgress />
                 </TableCell>
               </TableRow>
             ) : dataSource.length > 0 ? (
               dataSource.map((row, index) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={() => handleCourseRowClick(row.id, row.name)}
+                  style={{ cursor: "pointer" }}
+                >
+                  {" "}
                   <TableCell>
                     {index +
                       1 +
@@ -461,14 +374,23 @@ const ManageParents = () => {
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
                   <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.description}</TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => handleDeleteClick(row.id, row.name)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chặn click lan rộng lên TableRow
+                        handleDeleteClick(row.id, row.name);
+                      }}
                       color="error"
                     >
                       <DeleteIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleEditClick(row)}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditClick(row);
+                      }}
+                    >
                       <EditIcon color="primary" />
                     </IconButton>
                   </TableCell>
@@ -476,7 +398,7 @@ const ManageParents = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={4} align="center">
+                <TableCell colSpan={5} align="center">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>
@@ -496,7 +418,6 @@ const ManageParents = () => {
         labelRowsPerPage="Số hàng mỗi trang:"
       />
 
-      {/* Dialog xác nhận xóa */}
       <Dialog
         open={deleteDialog.open}
         onClose={handleCancelDelete}
@@ -506,9 +427,9 @@ const ManageParents = () => {
         <DialogTitle id="alert-dialog-title">Xác nhận xóa</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-description">
-            Bạn có chắc chắn muốn xóa phụ huynh{" "}
-            <strong>{deleteDialog.parentName}</strong> (ID:{" "}
-            {deleteDialog.parentId}) không?
+            Bạn có chắc chắn muốn xóa môn học{" "}
+            <strong>{deleteDialog.courseName}</strong> (ID:{" "}
+            {deleteDialog.courseId}) không?
             <br />
             Hành động này không thể hoàn tác.
           </DialogContentText>
@@ -521,35 +442,104 @@ const ManageParents = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Edit Dialog */}
       <Dialog
         open={editDialog.open}
-        onClose={() => setEditDialog({ open: false, parent: null })}
+        onClose={() => setEditDialog({ open: false, course: null })}
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>Chỉnh sửa thông tin phụ huynh</DialogTitle>
+        <DialogTitle>Chỉnh sửa thông tin môn học</DialogTitle>
         <DialogContent>
-          {editDialog.parent && (
+          {editDialog.course && (
             <div style={{ marginTop: "16px", display: "grid", gap: "16px" }}>
               <TextField
-                label="Họ và tên"
+                label="Tên môn học"
                 fullWidth
-                value={editDialog.parent.name || ""}
+                value={editDialog.course.name || ""}
                 onChange={(e) => handleEditInputChange("name", e.target.value)}
+                error={!!newCourseErrors.name}
+                helperText={newCourseErrors.name}
+              />
+              <TextField
+                label="Mô tả"
+                fullWidth
+                value={editDialog.course.description || ""}
+                onChange={(e) =>
+                  handleEditInputChange("description", e.target.value)
+                }
               />
             </div>
           )}
         </DialogContent>
         <DialogActions>
           <Button
-            onClick={() => setEditDialog({ open: false, parent: null })}
+            onClick={() => setEditDialog({ open: false, course: null })}
             color="secondary"
           >
             Hủy bỏ
           </Button>
-          <Button onClick={handleUpdateParent} color="primary">
+          <Button onClick={handleUpdateCourse} color="primary">
             Cập nhật
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={classesDialog.open}
+        onClose={() => setClassesDialog({ open: false, courseName: "" })}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          Các lớp học của môn học {classesDialog.courseName}
+        </DialogTitle>
+        <DialogContent>
+          {loading ? (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100px",
+              }}
+            >
+              <CircularProgress />
+            </div>
+          ) : selectedCourseClasses.length > 0 ? (
+            <TableContainer component={Paper} style={{ marginTop: "1rem" }}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>STT</TableCell>
+                    <TableCell>ID</TableCell>
+                    <TableCell>Tên lớp</TableCell>
+                    <TableCell>Giáo viên</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {selectedCourseClasses.map((clazz, index) => (
+                    <TableRow key={clazz.id}>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell>{clazz.id}</TableCell>
+                      <TableCell>{clazz.name}</TableCell>
+                      <TableCell>{clazz.teacherName}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <DialogContentText>
+              Không có lớp học nào cho môn học này.
+            </DialogContentText>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setClassesDialog({ open: false, courseName: "" })}
+            color="primary"
+          >
+            Đóng
           </Button>
         </DialogActions>
       </Dialog>
@@ -571,4 +561,4 @@ const ManageParents = () => {
   );
 };
 
-export default ManageParents;
+export default ManageCourses;

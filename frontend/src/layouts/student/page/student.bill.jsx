@@ -45,7 +45,6 @@ const StudentBills = () => {
   const studentId = useSelector(
     (state) => state.auth.studentId || getLocalData("studentId")
   );
-  const role = useSelector((state) => state.auth.role);
 
   // console.log("Current studentId:", studentId); // Kiểm tra giá trị
 

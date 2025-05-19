@@ -19,40 +19,40 @@ import user6 from "../assets/imgs/profile-pictures/user6.jpg";
 
 export const testimonials = [
   {
-    user: "John Doe",
-    company: "Stellar Solutions",
+    user: "Trần Minh Anh",
+    company: "Giải pháp Tối ưu",
     image: user1,
-    text: "I am extremely satisfied with the services provided. The team was responsive, professional, and delivered results beyond my expectations.",
+    text: "Tôi cực kỳ hài lòng với dịch vụ của trung tâm. Đội ngũ giảng viên nhiệt tình, chuyên nghiệp và mang lại kết quả vượt xa mong đợi của tôi. Môi trường học tập rất năng động và hỗ trợ.",
   },
   {
-    user: "Jane Smith",
-    company: "Blue Horizon Technologies",
+    user: "Nguyễn Thị Hà",
+    company: "Công nghệ Chân trời Xanh",
     image: user2,
-    text: "I couldn't be happier with the outcome of our project. The team's creativity and problem-solving skills were instrumental in bringing our vision to life",
+    text: "Tôi rất vui với kết quả của dự án học tập của mình. Sự sáng tạo và kỹ năng giải quyết vấn đề của giảng viên đóng vai trò quan trọng trong việc hiện thực hóa ý tưởng của chúng tôi. Trung tâm có cơ sở vật chất hiện đại.",
   },
   {
-    user: "David Johnson",
-    company: "Quantum Innovations",
+    user: "Lê Hoàng Nam",
+    company: "Sáng tạo Lượng tử",
     image: user3,
-    text: "Working with this company was a pleasure. Their attention to detail and commitment to excellence are commendable. I would highly recommend them to anyone looking for top-notch service.",
+    text: "Làm việc với trung tâm này là một niềm vui. Sự chú ý đến chi tiết và cam kết xuất sắc của họ rất đáng khen ngợi. Tôi muốn giới thiệu trung tâm cho bất kỳ ai tìm kiếm dịch vụ đào tạo chất lượng hàng đầu. Học phí phù hợp.",
   },
   {
-    user: "Ronee Brown",
-    company: "Fusion Dynamics",
+    user: "Phạm Thu Hương",
+    company: "Động lực Kết nối",
     image: user4,
-    text: "Working with the team at XYZ Company was a game-changer for our project. Their attention to detail and innovative solutions helped us achieve our goals faster than we thought possible. We are grateful for their expertise and professionalism!",
+    text: "Đội ngũ giảng viên của trung tâm đã tạo ra một bước ngoặt lớn cho quá trình học tập của tôi. Sự tận tâm và các giải pháp sáng tạo của họ đã giúp tôi đạt được mục tiêu nhanh hơn tôi nghĩ. Tôi rất biết ơn chuyên môn và sự chuyên nghiệp của họ!",
   },
   {
-    user: "Michael Wilson",
-    company: "Visionary Creations",
+    user: "Vũ Đức Duy",
+    company: "Sáng tạo Tầm nhìn",
     image: user5,
-    text: "I am amazed by the level of professionalism and dedication shown by the team. They were able to exceed our expectations and deliver outstanding results.",
+    text: "Tôi rất ngạc nhiên trước trình độ chuyên môn và sự nhiệt tình của đội ngũ giảng viên. Họ đã có thể vượt qua mong đợi của chúng tôi và mang lại kết quả xuất sắc. Trung tâm thường xuyên tổ chức các hoạt động ngoại khóa bổ ích.",
   },
   {
-    user: "Emily Davis",
-    company: "Synergy Systems",
+    user: "Trần Khánh Linh",
+    company: "Hệ thống Hiệp lực",
     image: user6,
-    text: "The team went above and beyond to ensure our project was a success. Their expertise and dedication are unmatched. I look forward to working with them again in the future.",
+    text: "Đội ngũ giảng viên đã làm việc hết mình để đảm bảo dự án học tập của chúng tôi thành công. Chuyên môn và sự tận tâm của họ là vô song. Tôi mong muốn được học tập tại trung tâm trong tương lai. Trung tâm có nhiều chương trình học đa dạng.",
   },
 ];
 

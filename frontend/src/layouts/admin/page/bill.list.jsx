@@ -179,7 +179,7 @@ const ManageBills = () => {
     let label = "";
 
     switch (status) {
-      case "PENDING_PAYMENT":
+      case "PENDING":
         color = "warning";
         label = "Chờ thanh toán";
         break;
