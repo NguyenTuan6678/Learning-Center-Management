@@ -51,8 +51,10 @@ import { getAllCoursesSer } from "../../../services/course.service.jsx";
 import { getAllDays } from "../../../services/day.service.jsx";
 import { getAllTeacherSer as getAllTeachers } from "../../../services/teacher.service.jsx";
 import { getAllTimes } from "../../../services/time.service.jsx";
+import ClassDetail from "./class.detail.jsx";
 
 const ManageClasses = () => {
+  const [selectedClass, setSelectedClass] = useState(null);
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -99,6 +101,16 @@ const ManageClasses = () => {
   const [times, setTimes] = useState([]);
   const [dropdownsLoading, setDropdownsLoading] = useState(false);
 
+  const handleClassRowClick = (classId) => {
+    console.log("Clicked Class ID:", classId, "Type:", typeof classId);
+    navigate(`/classes/${classId}`);
+  };
+
+  // Hàm đóng ClassDetail
+  const handleCloseDetail = () => {
+    setSelectedClass(null);
+  };
+
   const navigate = useNavigate();
 
   const showSnackbar = (message, severity = "success") => {
@@ -130,6 +142,8 @@ const ManageClasses = () => {
       }
 
       const classes = res?.data?.rows || [];
+
+      console.log("API Response:", res?.data?.rows);
       setDataSource(
         classes.map((item, index) => ({
           id: item.id || `class-${index}`,
@@ -430,9 +444,9 @@ const ManageClasses = () => {
   }, [filter.type, filter.value, paginationInfo.rowsPerPage, searchText]);
 
   // THÊM MỚI: handle click on class row to navigate to detail page
-  const handleClassRowClick = (classId) => {
-    navigate(`/classes/${classId}`); // Navigate to the new detail page
-  };
+  // const handleClassRowClick = (classId) => {
+  //   navigate(`/classes/${classId}`); // Navigate to the new detail page
+  // };
 
   return (
     <div style={{ width: "100%", padding: "20px" }}>
@@ -721,6 +735,23 @@ const ManageClasses = () => {
                   Không có dữ liệu
                 </TableCell>
               </TableRow>
+            )}
+
+            {selectedClass && (
+              <Dialog
+                open={!!selectedClass}
+                onClose={handleCloseDetail}
+                fullWidth
+                maxWidth="md"
+              >
+                <DialogTitle>Chi tiết lớp học</DialogTitle>
+                <DialogContent>
+                  <ClassDetail classId={selectedClass} />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={handleCloseDetail}>Đóng</Button>
+                </DialogActions>
+              </Dialog>
             )}
           </TableBody>
         </Table>

@@ -231,15 +231,9 @@ const ManageBills = () => {
           size="small"
         />
 
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => {
-            /* Handle add new bill */
-          }}
-        >
+        {/* <Button variant="contained" startIcon={<AddIcon />} onClick={() => {}}>
           Thêm hoá đơn
-        </Button>
+        </Button> */}
       </div>
 
       <TableContainer component={Paper}>
@@ -423,7 +417,7 @@ const ManageBills = () => {
               </Select>
             </FormControl>
 
-            <FormControl fullWidth margin="normal">
+            {/* <FormControl fullWidth margin="normal">
               <InputLabel>Phụ huynh</InputLabel>
               <Select
                 value={selectedParentId}
@@ -440,7 +434,7 @@ const ManageBills = () => {
                   </MenuItem>
                 ))}
               </Select>
-            </FormControl>
+            </FormControl> */}
           </div>
         </DialogContent>
         <DialogActions>

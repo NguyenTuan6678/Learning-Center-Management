@@ -17,7 +17,8 @@ import {
   Button,
 } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
-import { getClassById } from "../../services/class.service.jsx"; // Import API lấy chi tiết lớp học
+import { getClassById } from "../../../services/class.service";
+// import { getClassById } from "../../services/class.service.jsx"; // Import API lấy chi tiết lớp học
 
 const ClassDetail = () => {
   const { classId } = useParams(); // Lấy classId từ URL

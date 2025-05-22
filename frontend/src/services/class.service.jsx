@@ -42,12 +42,12 @@ export const searchClassByName = (name) => {
 };
 
 export const getAllClasses = (payload) => {
-  const page = payload.page || 0; // Sử dụng optional chaining và nullish coalescing
+  const page = payload.page || 0;
   const size = payload.size || 10;
   return api.makeRequest({
     url: `/api/class/listAll?page=${page}&size=${size}`,
     method: "GET",
-    data: payload, // Có thể truyền payload nếu bạn muốn gửi thêm tham số
+    data: payload,
   });
 };
 

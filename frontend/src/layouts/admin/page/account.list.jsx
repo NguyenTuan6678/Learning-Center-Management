@@ -36,7 +36,7 @@ import {
   Add as AddIcon,
   Visibility,
   VisibilityOff,
-  Warning as WarningIcon, // Thêm icon cảnh báo
+  Warning as WarningIcon,
 } from "@mui/icons-material";
 import {
   getall,
@@ -71,10 +71,9 @@ const ManageAccounts = () => {
     role: "STUDENT",
   });
   const [newAccountErrors, setNewAccountErrors] = useState({});
-  const [isCreating, setIsCreating] = useState(false); // Track creation state
-  const [showCreateCard, setShowCreateCard] = useState(false); // State để hiển thị/ẩn thẻ tạo tài khoản
+  const [isCreating, setIsCreating] = useState(false);
+  const [showCreateCard, setShowCreateCard] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState({
-    // State cho dialog xác nhận xóa
     open: false,
     id: null,
     role: null,
@@ -112,7 +111,7 @@ const ManageAccounts = () => {
     }
   };
 
-  const handleChangePage = (event, newPage) => {
+  const handleChangePage = (newPage) => {
     fetchAccounts(newPage, paginationInfo.rowsPerPage);
   };
 
@@ -141,11 +140,10 @@ const ManageAccounts = () => {
       showSnackbar("Không được phép xóa tài khoản ADMIN.", "error");
       return;
     }
-    setDeleteConfirmation({ open: true, id, role }); // Mở dialog xác nhận
+    setDeleteConfirmation({ open: true, id, role });
   };
 
   const confirmDelete = async () => {
-    // Hàm này được gọi khi người dùng xác nhận xóa trong dialog
     try {
       await deleteAccount(deleteConfirmation.id, deleteConfirmation.role);
       showSnackbar("Xóa tài khoản thành công!");
@@ -154,12 +152,12 @@ const ManageAccounts = () => {
       console.error("Xóa thất bại:", error);
       showSnackbar("Xóa tài khoản thất bại!", "error");
     } finally {
-      setDeleteConfirmation({ open: false, id: null, role: null }); // Đóng dialog
+      setDeleteConfirmation({ open: false, id: null, role: null });
     }
   };
 
   const cancelDelete = () => {
-    setDeleteConfirmation({ open: false, id: null, role: null }); // Đóng dialog
+    setDeleteConfirmation({ open: false, id: null, role: null });
   };
 
   const handleUpdate = async (updatedData) => {
@@ -216,7 +214,7 @@ const ManageAccounts = () => {
   const handleNewAccountInputChange = (e) => {
     const { name, value } = e.target;
     setNewAccountForm({ ...newAccountForm, [name]: value });
-    setNewAccountErrors({ ...newAccountErrors, [name]: "" }); // Clear errors
+    setNewAccountErrors({ ...newAccountErrors, [name]: "" });
   };
 
   const validateNewAccountForm = () => {
@@ -259,9 +257,9 @@ const ManageAccounts = () => {
       setIsCreating(true);
       await create(newAccountForm);
       showSnackbar("Tạo tài khoản thành công!", "success");
-      setNewAccountForm({ username: "", password: "", role: "STUDENT" }); // Reset
-      fetchAccounts(); // Refresh the table
-      setShowCreateCard(false); // Ẩn thẻ sau khi tạo thành công
+      setNewAccountForm({ username: "", password: "", role: "STUDENT" });
+      fetchAccounts();
+      setShowCreateCard(false);
     } catch (error) {
       console.error("Failed to create account:", error);
       showSnackbar("Tạo tài khoản thất bại!", "error");
