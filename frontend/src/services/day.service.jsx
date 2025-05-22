@@ -6,7 +6,7 @@ const api = createApiService({
 
 export const getAllDays = () => {
   return api.makeRequest({
-    url: `/api/time/listAll`,
+    url: `/api/day/listAll`,
     method: "GET",
   });
 };

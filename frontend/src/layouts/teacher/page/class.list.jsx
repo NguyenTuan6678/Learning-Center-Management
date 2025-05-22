@@ -1,35 +1,3 @@
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  TextField,
-  InputAdornment,
-  IconButton,
-  TablePagination,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  FormHelperText,
-} from "@mui/material";
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
@@ -37,19 +5,52 @@ import {
   Search as SearchIcon,
 } from "@mui/icons-material";
 import {
-  getAllClasses,
-  deleteClass,
+  Alert,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  FormControl,
+  FormHelperText,
+  IconButton,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Snackbar,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  TextField,
+} from "@mui/material";
+import { debounce } from "lodash";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // <-- THÊM MỚI
+import {
   createClass,
-  searchClassByName,
+  deleteClass,
+  getAllClasses,
   getClassesByCourse,
   getClassesByTeacher,
+  searchClassByName,
   updateClass,
 } from "../../../services/class.service.jsx";
 import { getAllCoursesSer } from "../../../services/course.service.jsx";
-import { getAllTeacherSer as getAllTeachers } from "../../../services/teacher.service.jsx";
 import { getAllDays } from "../../../services/day.service.jsx";
+import { getAllTeacherSer as getAllTeachers } from "../../../services/teacher.service.jsx";
 import { getAllTimes } from "../../../services/time.service.jsx";
-import { debounce } from "lodash";
 
 const ManageClasses = () => {
   const [dataSource, setDataSource] = useState([]);
@@ -97,6 +98,8 @@ const ManageClasses = () => {
   const [days, setDays] = useState([]);
   const [times, setTimes] = useState([]);
   const [dropdownsLoading, setDropdownsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
   const showSnackbar = (message, severity = "success") => {
     setSnackbar({ open: true, message, severity });
@@ -203,7 +206,6 @@ const ManageClasses = () => {
       setDays(fetchedDays);
       setTimes(fetchedTimes);
 
-      // --- KHAI BÁO VÀ XÁC THỰC CÁC BIẾN HỢP LỆ ---
       const validCourseId = fetchedCourses.some(
         (c) => String(c.courseId) === String(clazz.courseId)
       )
@@ -214,72 +216,16 @@ const ManageClasses = () => {
       )
         ? clazz.teacherId
         : "";
-
-      // --- DEBUG DAY ID ---
-      let matchedDayId = "";
-      // console.log("--- DEBUG DAY ID COMPARISON ---");
-      // console.log(
-      //   "Clazz DayId (from selected class):",
-      //   String(clazz.dayId),
-      //   "Type:",
-      //   typeof clazz.dayId
-      // );
-      if (fetchedDays.length > 0) {
-        // console.log("Fetched Days array length:", fetchedDays.length);
-        fetchedDays.forEach((day) => {
-          const fetchedDayIdString = String(day.dayId);
-          const clazzDayIdString = String(clazz.dayId);
-          const isMatch = fetchedDayIdString === clazzDayIdString;
-          // console.log(
-          //   `  Day[${index}]: fetchedId=${fetchedDayIdString} (Type: ${typeof fetchedDayIdString}), clazzId=${clazzDayIdString} (Type: ${typeof clazzDayIdString}), Match: ${isMatch}`
-          // );
-          if (isMatch) {
-            matchedDayId = clazz.dayId;
-          }
-        });
-      } else {
-        console.log("Fetched Days array is empty.");
-      }
-      const validDayId = matchedDayId;
-      // console.log(
-      //   "Result: Original dayId:",
-      //   clazz.dayId,
-      //   "Valid dayId for select:",
-      //   validDayId
-      // );
-
-      // --- DEBUG TIME ID ---
-      let matchedTimeId = "";
-      // console.log("--- DEBUG TIME ID COMPARISON ---");
-      // console.log(
-      //   "Clazz TimeId (from selected class):",
-      //   String(clazz.timeId),
-      //   "Type:",
-      //   typeof clazz.timeId
-      // );
-      if (fetchedTimes.length > 0) {
-        // console.log("Fetched Times array length:", fetchedTimes.length);
-        fetchedTimes.forEach((time) => {
-          const fetchedTimeIdString = String(time.timeId);
-          const clazzTimeIdString = String(clazz.timeId);
-          const isMatch = fetchedTimeIdString === clazzTimeIdString;
-          // console.log(
-          //   `  Time[${index}]: fetchedId=${fetchedTimeIdString} (Type: ${typeof fetchedTimeIdString}), clazzId=${clazzTimeIdString} (Type: ${typeof clazzTimeIdString}), Match: ${isMatch}`
-          // );
-          if (isMatch) {
-            matchedTimeId = clazz.timeId;
-          }
-        });
-      } else {
-        console.log("Fetched Times array is empty.");
-      }
-      const validTimeId = matchedTimeId;
-      // console.log(
-      //   "Result: Original timeId:",
-      //   clazz.timeId,
-      //   "Valid timeId for select:",
-      //   validTimeId
-      // );
+      const validDayId = fetchedDays.some(
+        (d) => String(d.dayId) === String(clazz.dayId)
+      )
+        ? clazz.dayId
+        : "";
+      const validTimeId = fetchedTimes.some(
+        (t) => String(t.timeId) === String(clazz.timeId)
+      )
+        ? clazz.timeId
+        : "";
 
       setEditDialog({
         open: true,
@@ -296,11 +242,6 @@ const ManageClasses = () => {
         days: fetchedDays,
         times: fetchedTimes,
       });
-
-      console.log("Edit Dialog state AFTER setEditDialog call:");
-      setTimeout(() => {
-        console.log("Edit Dialog state (after short delay):", editDialog);
-      }, 100); // Giữ lại log này để xem state có bị reset không
     } catch (err) {
       console.error("Failed to load dropdown data for edit:", err);
       showSnackbar("Không thể tải dữ liệu cho các tùy chọn chỉnh sửa", "error");
@@ -425,6 +366,7 @@ const ManageClasses = () => {
       newErrors.teacherId = "Vui lòng chọn giáo viên!";
       isValid = false;
     }
+
     setNewClassErrors(newErrors);
     return isValid;
   };
@@ -469,10 +411,10 @@ const ManageClasses = () => {
     filter.value,
   ]);
 
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilter({ ...filter, [name]: value });
-  };
+  // const handleFilterChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFilter({ ...filter, [name]: value });
+  // };
 
   useEffect(() => {
     if (filter.type !== "all" && filter.value) {
@@ -486,6 +428,11 @@ const ManageClasses = () => {
       fetchClasses(0, paginationInfo.rowsPerPage, searchText);
     }
   }, [filter.type, filter.value, paginationInfo.rowsPerPage, searchText]);
+
+  // THÊM MỚI: handle click on class row to navigate to detail page
+  const handleClassRowClick = (classId) => {
+    navigate(`/classes/${classId}`); // Navigate to the new detail page
+  };
 
   return (
     <div style={{ width: "100%", padding: "20px" }}>
@@ -514,81 +461,6 @@ const ManageClasses = () => {
           size="small"
           style={{ width: 250 }}
         />
-        <FormControl variant="outlined" size="small" style={{ minWidth: 180 }}>
-          <InputLabel id="filter-type-label">Lọc theo</InputLabel>
-          <Select
-            labelId="filter-type-label"
-            id="filter-type"
-            name="type"
-            value={filter.type}
-            label="Lọc theo"
-            onChange={handleFilterChange}
-          >
-            <MenuItem value="all">Tất cả</MenuItem>
-            <MenuItem value="course">Môn học</MenuItem>
-            <MenuItem value="teacher">Giáo viên</MenuItem>
-          </Select>
-        </FormControl>
-        {filter.type === "course" && (
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ minWidth: 180 }}
-          >
-            <InputLabel id="filter-course-label">Chọn môn học</InputLabel>
-            <Select
-              labelId="filter-course-label"
-              id="filter-course"
-              name="value"
-              value={filter.value}
-              label="Chọn môn học"
-              onChange={handleFilterChange}
-              disabled={dropdownsLoading || courses.length === 0}
-            >
-              {dropdownsLoading ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} /> Đang tải...
-                </MenuItem>
-              ) : (
-                courses?.map((course) => (
-                  <MenuItem key={course.courseId} value={course.courseId}>
-                    {course.courseName}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        )}
-        {filter.type === "teacher" && (
-          <FormControl
-            variant="outlined"
-            size="small"
-            style={{ minWidth: 180 }}
-          >
-            <InputLabel id="filter-teacher-label">Chọn giáo viên</InputLabel>
-            <Select
-              labelId="filter-teacher-label"
-              id="filter-teacher"
-              name="value"
-              value={filter.value}
-              label="Chọn giáo viên"
-              onChange={handleFilterChange}
-              disabled={dropdownsLoading || teachers.length === 0}
-            >
-              {dropdownsLoading ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} /> Đang tải...
-                </MenuItem>
-              ) : (
-                teachers?.map((teacher) => (
-                  <MenuItem key={teacher.teacherId} value={teacher.teacherId}>
-                    {teacher.teacherName}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        )}
 
         <Button
           variant="contained"
@@ -638,12 +510,15 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    courses?.map((course) => (
-                      <MenuItem key={course.courseId} value={course.courseId}>
-                        {course.courseName}
-                      </MenuItem>
-                    ))
+                    <MenuItem value="">
+                      <em>Chọn môn học</em>
+                    </MenuItem>
                   )}
+                  {courses?.map((course) => (
+                    <MenuItem key={course.courseId} value={course.courseId}>
+                      {course.courseName}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {newClassErrors.courseId && (
                   <FormHelperText>{newClassErrors.courseId}</FormHelperText>
@@ -666,15 +541,15 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    teachers?.map((teacher) => (
-                      <MenuItem
-                        key={teacher.teacherId}
-                        value={teacher.teacherId}
-                      >
-                        {teacher.teacherName}
-                      </MenuItem>
-                    ))
+                    <MenuItem value="">
+                      <em>Chọn giáo viên</em>
+                    </MenuItem>
                   )}
+                  {teachers?.map((teacher) => (
+                    <MenuItem key={teacher.teacherId} value={teacher.teacherId}>
+                      {teacher.teacherName}
+                    </MenuItem>
+                  ))}
                 </Select>
                 {newClassErrors.teacherId && (
                   <FormHelperText>{newClassErrors.teacherId}</FormHelperText>
@@ -747,7 +622,7 @@ const ManageClasses = () => {
             <Button
               onClick={handleCreate}
               color="primary"
-              disabled={isCreating || dropdownsLoading}
+              disabled={isCreating}
               startIcon={
                 isCreating ? <CircularProgress size={20} /> : <AddIcon />
               }
@@ -801,7 +676,11 @@ const ManageClasses = () => {
               </TableRow>
             ) : dataSource.length > 0 ? (
               dataSource.map((row, index) => (
-                <TableRow key={row.id}>
+                <TableRow
+                  key={row.id}
+                  onClick={() => handleClassRowClick(row.id)} // THÊM MỚI: onClick để điều hướng
+                  style={{ cursor: "pointer" }} // THÊM MỚI: Con trỏ thành pointer
+                >
                   <TableCell>
                     {index +
                       1 +
@@ -817,12 +696,20 @@ const ManageClasses = () => {
                   </TableCell>
                   <TableCell>
                     <IconButton
-                      onClick={() => handleDeleteClick(row.id, row.name)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chặn sự kiện click hàng
+                        handleDeleteClick(row.id, row.name);
+                      }}
                       color="error"
                     >
                       <DeleteIcon />
                     </IconButton>
-                    <IconButton onClick={() => handleEditClick(row)}>
+                    <IconButton
+                      onClick={(e) => {
+                        e.stopPropagation(); // Ngăn chặn sự kiện click hàng
+                        handleEditClick(row);
+                      }}
+                    >
                       <EditIcon color="primary" />
                     </IconButton>
                   </TableCell>
@@ -927,12 +814,15 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    editDialog.courses?.map((course) => (
-                      <MenuItem key={course.courseId} value={course.courseId}>
-                        {course.courseName}
-                      </MenuItem>
-                    ))
+                    <MenuItem value="">
+                      <em>Chọn môn học</em>
+                    </MenuItem>
                   )}
+                  {editDialog.courses?.map((course) => (
+                    <MenuItem key={course.courseId} value={course.courseId}>
+                      {course.courseName}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
 
@@ -956,15 +846,15 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    editDialog.teachers?.map((teacher) => (
-                      <MenuItem
-                        key={teacher.teacherId}
-                        value={teacher.teacherId}
-                      >
-                        {teacher.teacherName}
-                      </MenuItem>
-                    ))
+                    <MenuItem value="">
+                      <em>Chọn giáo viên</em>
+                    </MenuItem>
                   )}
+                  {editDialog.teachers?.map((teacher) => (
+                    <MenuItem key={teacher.teacherId} value={teacher.teacherId}>
+                      {teacher.teacherName}
+                    </MenuItem>
+                  ))}
                 </Select>
               </FormControl>
               <FormControl fullWidth>
@@ -985,7 +875,7 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    <MenuItem value="" disabled>
+                    <MenuItem value="">
                       <em>Không chọn ngày</em>
                     </MenuItem>
                   )}
@@ -1015,7 +905,7 @@ const ManageClasses = () => {
                       <CircularProgress size={20} /> Đang tải...
                     </MenuItem>
                   ) : (
-                    <MenuItem value="" disabled>
+                    <MenuItem value="">
                       <em>Không chọn giờ</em>
                     </MenuItem>
                   )}
@@ -1045,11 +935,7 @@ const ManageClasses = () => {
           >
             Hủy bỏ
           </Button>
-          <Button
-            onClick={handleUpdateClass}
-            color="primary"
-            disabled={loading || dropdownsLoading}
-          >
+          <Button onClick={handleUpdateClass} color="primary">
             Cập nhật
           </Button>
         </DialogActions>

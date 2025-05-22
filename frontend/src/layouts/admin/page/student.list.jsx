@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -28,7 +28,6 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  FormHelperText,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -160,8 +159,6 @@ const ManageStudents = () => {
         availableAccounts: [],
         loadingAccounts: true,
       });
-
-      // Lấy danh sách tài khoản STUDENT chưa được gán
       const res = await getAvailableAccounts();
       setEditDialog((prev) => ({
         ...prev,
@@ -615,7 +612,7 @@ const ManageStudents = () => {
                   ) : (
                     editDialog.availableAccounts.map((account) => (
                       <MenuItem key={account.id} value={account.id}>
-                        {account.username} ({account.email})
+                        {account.username}
                       </MenuItem>
                     ))
                   )}

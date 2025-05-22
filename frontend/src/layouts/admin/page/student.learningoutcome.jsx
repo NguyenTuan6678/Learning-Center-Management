@@ -23,21 +23,19 @@ import {
   Upload as UploadIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
-import { getall, create, search } from "../../../services/student.service";
-import AddStudentDrawer from "../../../components/drawers";
+import { getall, search } from "../../../services/student.service";
 import { debounce } from "lodash";
 
 const ManageAdminLearningOutcomes = () => {
   const [dataSource, setDataSource] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [openDrawer, setOpenDrawer] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [paginationInfo, setPaginationInfo] = useState({
     page: 0,
     rowsPerPage: 10,
     total: 0,
   });
-  const [selectedFile, setSelectedFile] = useState(null);
+  // const [selectedFile, setSelectedFile] = useState(null);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -103,62 +101,61 @@ const ManageAdminLearningOutcomes = () => {
     }
   };
 
-  const handleCreate = async (values) => {
-    try {
-      await create(values);
-      showSnackbar("Thêm sinh viên thành công!");
-      setOpenDrawer(false);
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-    } catch (error) {
-      console.error("Thêm thất bại:", error);
-      showSnackbar("Thêm sinh viên thất bại!", "error");
-    }
-  };
+  // const handleCreate = async (values) => {
+  //   try {
+  //     await create(values);
+  //     showSnackbar("Thêm sinh viên thành công!");
+  //     fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
+  //   } catch (error) {
+  //     console.error("Thêm thất bại:", error);
+  //     showSnackbar("Thêm sinh viên thất bại!", "error");
+  //   }
+  // };
 
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleFileChange = (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const validTypes = [
-      "application/vnd.ms-excel",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/octet-stream",
-    ];
+  //   const validTypes = [
+  //     "application/vnd.ms-excel",
+  //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  //     "application/octet-stream",
+  //   ];
 
-    if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/)) {
-      showSnackbar("Chỉ chấp nhận file Excel (.xls, .xlsx)", "error");
-      return;
-    }
+  //   if (!validTypes.includes(file.type) && !file.name.match(/\.(xls|xlsx)$/)) {
+  //     showSnackbar("Chỉ chấp nhận file Excel (.xls, .xlsx)", "error");
+  //     return;
+  //   }
 
-    setSelectedFile(file);
-  };
+  //   setSelectedFile(file);
+  // };
 
-  const handleFileUpload = async () => {
-    if (!selectedFile) {
-      showSnackbar("Vui lòng chọn file trước khi tải lên.", "warning");
-      return;
-    }
+  // const handleFileUpload = async () => {
+  //   if (!selectedFile) {
+  //     showSnackbar("Vui lòng chọn file trước khi tải lên.", "warning");
+  //     return;
+  //   }
 
-    try {
-      setLoading(true);
-      const response = await uploadExcel(selectedFile);
-      console.log("uploadExcel response:", response);
-      showSnackbar(response.data.message || "Tải lên thành công");
-      fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
-    } catch (error) {
-      console.error("Upload error:", error);
-      if (error.response) {
-        const errorMsg =
-          error.response.data?.message || error.response.data?.error;
-        showSnackbar(errorMsg || "Upload thất bại", "error");
-      } else {
-        showSnackbar("Lỗi kết nối đến server", "error");
-      }
-    } finally {
-      setLoading(false);
-      setSelectedFile(null);
-    }
-  };
+  //   try {
+  //     setLoading(true);
+  //     const response = await uploadExcel(selectedFile);
+  //     console.log("uploadExcel response:", response);
+  //     showSnackbar(response.data.message || "Tải lên thành công");
+  //     fetchStudents(paginationInfo.page, paginationInfo.rowsPerPage);
+  //   } catch (error) {
+  //     console.error("Upload error:", error);
+  //     if (error.response) {
+  //       const errorMsg =
+  //         error.response.data?.message || error.response.data?.error;
+  //       showSnackbar(errorMsg || "Upload thất bại", "error");
+  //     } else {
+  //       showSnackbar("Lỗi kết nối đến server", "error");
+  //     }
+  //   } finally {
+  //     setLoading(false);
+  //     setSelectedFile(null);
+  //   }
+  // };
 
   const debouncedSearch = debounce(handleSearch, 500);
 
@@ -166,14 +163,6 @@ const ManageAdminLearningOutcomes = () => {
     const value = e.target.value;
     setSearchText(value);
     debouncedSearch(value);
-  };
-
-  const showDrawer = () => {
-    setOpenDrawer(true);
-  };
-
-  const closeDrawer = () => {
-    setOpenDrawer(false);
   };
 
   useEffect(() => {
@@ -276,12 +265,6 @@ const ManageAdminLearningOutcomes = () => {
         onPageChange={handleChangePage}
         onRowsPerPageChange={handleChangeRowsPerPage}
         labelRowsPerPage="Số hàng mỗi trang:"
-      />
-
-      <AddStudentDrawer
-        open={openDrawer}
-        onClose={closeDrawer}
-        onCreate={handleCreate}
       />
 
       <Snackbar

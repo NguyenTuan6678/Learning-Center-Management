@@ -61,16 +61,9 @@ export const upload = (file) => {
   });
 };
 
-export const getStudentIdByAccount = (accountId) => {
-  return api.makeRequest({
-    url: `/api/student/by-account/${accountId}`,
-    method: "GET",
-  });
-};
-
 export const getAvailableAccounts = () => {
   return api.makeRequest({
-    url: "/api/account/available-student", // URL của endpoint backend
-    method: "GET", // Phương thức HTTP là GET
+    url: "/api/account/available-student",
+    method: "GET",
   });
 };

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -35,7 +35,7 @@ import {
   getAllCourses,
   deleteCourse,
   createCourse,
-  searchCourses,
+  updateCourse,
 } from "../../../services/course.service";
 import { getClassesByCourse } from "../../../services/class.service";
 import { debounce } from "lodash";
@@ -65,7 +65,7 @@ const ManageCourses = () => {
   });
 
   const [newCourseForm, setNewCourseForm] = useState({
-    name: "",
+    courseName: "",
     description: "",
   });
   const [newCourseErrors, setNewCourseErrors] = useState({});
@@ -90,6 +90,18 @@ const ManageCourses = () => {
     try {
       const res = await getAllCourses({ page, size: rowsPerPage });
       const courses = res?.data?.rows || [];
+      courses.sort((a, b) => {
+        const nameA = a.courseName ? a.courseName.toUpperCase() : "";
+        const nameB = b.courseName ? b.courseName.toUpperCase() : "";
+
+        if (nameA < nameB) {
+          return -1;
+        }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
       setDataSource(
         courses.map((item, index) => ({
           id: item.courseId || `course-${index}`,
@@ -110,19 +122,19 @@ const ManageCourses = () => {
   };
 
   const handleChangePage = (event, newPage) => {
-    fetchCourses(newPage, paginationInfo.rowsPerPage, searchText);
+    fetchCourses(newPage, paginationInfo.rowsPerPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
     const rowsPerPage = parseInt(event.target.value, 10);
-    fetchCourses(0, rowsPerPage, searchText);
+    fetchCourses(0, rowsPerPage);
   };
 
-  const handleDeleteClick = (id, name) => {
+  const handleDeleteClick = (id, courseName) => {
     setDeleteDialog({
       open: true,
       courseId: id,
-      courseName: name,
+      courseName: courseName,
     });
   };
 
@@ -130,7 +142,7 @@ const ManageCourses = () => {
     try {
       await deleteCourse(deleteDialog.courseId);
       showSnackbar("Xóa môn học thành công!");
-      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage);
     } catch (error) {
       console.error("Xóa thất bại:", error);
       showSnackbar("Xóa môn học thất bại!", "error");
@@ -151,11 +163,17 @@ const ManageCourses = () => {
   };
 
   const handleUpdateCourse = async () => {
+    if (!validateEditForm()) {
+      return;
+    }
     try {
       setLoading(true);
-      await updateCourse(editDialog.course.id, editDialog.course);
+      await updateCourse(editDialog.course.id, {
+        courseName: editDialog.course.courseName,
+        description: editDialog.course.description,
+      });
       showSnackbar("Cập nhật môn học thành công!");
-      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage);
       setEditDialog({ open: false, course: null });
     } catch (error) {
       console.error("Cập nhật thất bại:", error);
@@ -180,7 +198,7 @@ const ManageCourses = () => {
     fetchCourses(0, paginationInfo.rowsPerPage, name);
   };
 
-  const debouncedSearch = debounce(handleSearch, 500);
+  const debouncedSearch = debounce(handleSearch, 5000);
 
   const handleSearchInputChange = (e) => {
     const value = e.target.value;
@@ -194,10 +212,13 @@ const ManageCourses = () => {
     }
     try {
       setIsCreating(true);
-      await createCourse(newCourseForm);
+      await createCourse({
+        courseName: newCourseForm.courseName,
+        description: newCourseForm.description,
+      });
       showSnackbar("Thêm môn học thành công!");
-      setNewCourseForm({ name: "", description: "" });
-      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+      setNewCourseForm({ courseName: "", description: "" });
+      fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage);
       setShowCreateCard(false);
     } catch (error) {
       console.error("Thêm thất bại:", error);
@@ -217,8 +238,8 @@ const ManageCourses = () => {
     let isValid = true;
     const newErrors = {};
 
-    if (!newCourseForm.name.trim()) {
-      newErrors.name = "Vui lòng nhập tên môn học!";
+    if (!newCourseForm.courseName.trim()) {
+      newErrors.courseName = "Vui lòng nhập tên môn học!";
       isValid = false;
     }
 
@@ -226,11 +247,25 @@ const ManageCourses = () => {
     return isValid;
   };
 
+  const validateEditForm = () => {
+    let isValid = true;
+    if (!editDialog.course.courseName.trim()) {
+      showSnackbar("Tên môn học không được để trống!", "error");
+      isValid = false;
+    }
+    return isValid;
+  };
+
   useEffect(() => {
     fetchCourses();
   }, []);
 
+  useEffect(() => {
+    fetchCourses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
+  }, [paginationInfo.page, paginationInfo.rowsPerPage, searchText]);
+
   const handleCourseRowClick = async (courseId, courseName) => {
+    // Thêm courseName
     setLoading(true);
     try {
       const classesData = await getClassesByCourse(courseId);
@@ -290,11 +325,11 @@ const ManageCourses = () => {
             >
               <TextField
                 label="Tên môn học"
-                name="name"
-                value={newCourseForm.name}
+                name="courseName"
+                value={newCourseForm.courseName}
                 onChange={handleNewCourseInputChange}
-                error={!!newCourseErrors.name}
-                helperText={newCourseErrors.name}
+                error={!!newCourseErrors.courseName}
+                helperText={newCourseErrors.courseName}
                 fullWidth
               />
               <TextField
@@ -363,23 +398,22 @@ const ManageCourses = () => {
               dataSource.map((row, index) => (
                 <TableRow
                   key={row.id}
-                  onClick={() => handleCourseRowClick(row.id, row.name)}
+                  onClick={() => handleCourseRowClick(row.id, row.courseName)}
                   style={{ cursor: "pointer" }}
                 >
-                  {" "}
                   <TableCell>
                     {index +
                       1 +
                       paginationInfo.page * paginationInfo.rowsPerPage}
                   </TableCell>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.name}</TableCell>
+                  <TableCell>{row.courseName}</TableCell>{" "}
                   <TableCell>{row.description}</TableCell>
                   <TableCell>
                     <IconButton
                       onClick={(e) => {
-                        e.stopPropagation(); // Ngăn chặn click lan rộng lên TableRow
-                        handleDeleteClick(row.id, row.name);
+                        e.stopPropagation();
+                        handleDeleteClick(row.id, row.courseName);
                       }}
                       color="error"
                     >
@@ -454,14 +488,16 @@ const ManageCourses = () => {
             <div style={{ marginTop: "16px", display: "grid", gap: "16px" }}>
               <TextField
                 label="Tên môn học"
+                name="courseName"
                 fullWidth
-                value={editDialog.course.name || ""}
-                onChange={(e) => handleEditInputChange("name", e.target.value)}
-                error={!!newCourseErrors.name}
-                helperText={newCourseErrors.name}
+                value={editDialog.course.courseName || ""}
+                onChange={(e) =>
+                  handleEditInputChange("courseName", e.target.value)
+                }
               />
               <TextField
                 label="Mô tả"
+                name="description"
                 fullWidth
                 value={editDialog.course.description || ""}
                 onChange={(e) =>
@@ -522,7 +558,7 @@ const ManageCourses = () => {
                       <TableCell>{index + 1}</TableCell>
                       <TableCell>{clazz.id}</TableCell>
                       <TableCell>{clazz.name}</TableCell>
-                      <TableCell>{clazz.teacherName}</TableCell>
+                      <TableCell>{clazz.teacherName}</TableCell>{" "}
                     </TableRow>
                   ))}
                 </TableBody>

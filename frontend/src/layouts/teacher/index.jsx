@@ -6,7 +6,7 @@ import AppContent from "./navigation/content";
 import BreadCrumb from "../../components/breadcrumbs";
 import AppSider from "./navigation/sidebar";
 import { ColorModeContext, useMode } from "../../themes/theme";
-import TeacherClasses from "./page/teacher.list";
+import TeacherClasses from "./page/class.list";
 
 const componentMap = {
   dashboard: () => <Box sx={{ p: 3, minHeight: 360 }}>Dashboard Content</Box>,

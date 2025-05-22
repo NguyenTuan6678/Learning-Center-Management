@@ -21,7 +21,7 @@ import {
   CardHeader,
   Typography,
 } from "@mui/material";
-import { getAllCourses } from "../../../services/course.service.jsx";
+import { getAllCoursesSer } from "../../../services/course.service.jsx";
 import { getClassesByCourse } from "../../../services/class.service.jsx";
 import {
   addStudentToClass as enrollStudentToClass,
@@ -59,9 +59,9 @@ const StudentEnrollment = () => {
   const fetchCourses = async () => {
     setLoading(true);
     try {
-      const res = await getAllCourses();
-      if (res?.data?.rows) {
-        setCourses(res.data.rows);
+      const res = await getAllCoursesSer();
+      if (res?.data) {
+        setCourses(res.data);
       } else {
         setCourses([]);
         showSnackbar("Không có môn học nào để hiển thị.", "warning");
@@ -95,11 +95,16 @@ const StudentEnrollment = () => {
   const fetchEnrolledClasses = async () => {
     setLoading(true);
     try {
+      if (!studentId) {
+        console.warn("Student ID not available for fetching enrolled classes.");
+        setEnrolledClasses([]);
+        return;
+      }
       const res = await getClassStudentsByStudent(studentId);
-      setEnrolledClasses(res.data);
+      setEnrolledClasses(res.data || []);
     } catch (error) {
       console.error("Failed to fetch enrolled classes", error);
-      showSnackbar("Failed to fetch enrolled classes", "error");
+      showSnackbar("Không thể tải các lớp học đã đăng ký", "error");
     } finally {
       setLoading(false);
     }
@@ -108,8 +113,8 @@ const StudentEnrollment = () => {
   const handleCourseChange = (event) => {
     const courseId = event.target.value;
     setSelectedCourseId(courseId);
-    setSelectedClassId(""); // Reset class selection
-    setSelectedCourseDescription(""); // Clear description
+    setSelectedClassId("");
+    setSelectedCourseDescription("");
     if (courseId) {
       const selectedCourse = courses.find((c) => c.courseId === courseId);
       setSelectedCourseDescription(
@@ -130,6 +135,10 @@ const StudentEnrollment = () => {
       showSnackbar("Vui lòng chọn môn học và lớp học", "warning");
       return;
     }
+    if (!studentId) {
+      showSnackbar("Không thể đăng ký. Không tìm thấy ID sinh viên.", "error");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -142,7 +151,9 @@ const StudentEnrollment = () => {
       await fetchEnrolledClasses();
     } catch (error) {
       console.error("Failed to enroll:", error);
-      showSnackbar("Đăng ký lớp học thất bại!", "error");
+      const errorMessage =
+        error.response?.data?.message || "Đăng ký lớp học thất bại!";
+      showSnackbar(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -150,8 +161,10 @@ const StudentEnrollment = () => {
 
   useEffect(() => {
     fetchCourses();
-    fetchEnrolledClasses();
-  }, []);
+    if (studentId) {
+      fetchEnrolledClasses();
+    }
+  }, [studentId]);
 
   return (
     <div style={{ width: "100%", padding: "20px" }}>
@@ -161,7 +174,7 @@ const StudentEnrollment = () => {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "16px" }}
           >
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={loading}>
               <InputLabel id="course-select-label">Chọn môn học</InputLabel>
               <Select
                 labelId="course-select-label"
@@ -169,14 +182,13 @@ const StudentEnrollment = () => {
                 value={selectedCourseId}
                 label="Chọn môn học"
                 onChange={handleCourseChange}
-                disabled={loading}
               >
                 <MenuItem value="">
                   <em>Chọn môn học</em>
                 </MenuItem>
                 {courses?.map((course) => (
                   <MenuItem key={course.courseId} value={course.courseId}>
-                    {course.name}
+                    {course.courseName} - {course.description}{" "}
                   </MenuItem>
                 ))}
               </Select>
@@ -186,8 +198,7 @@ const StudentEnrollment = () => {
                 {selectedCourseDescription}
               </Typography>
             )}
-
-            <FormControl fullWidth>
+            <FormControl fullWidth disabled={!selectedCourseId || loading}>
               <InputLabel id="class-select-label">Chọn lớp học</InputLabel>
               <Select
                 labelId="class-select-label"
@@ -195,14 +206,14 @@ const StudentEnrollment = () => {
                 value={selectedClassId}
                 label="Chọn lớp học"
                 onChange={handleClassChange}
-                disabled={!selectedCourseId || loading}
               >
                 <MenuItem value="">
                   <em>Chọn lớp học</em>
                 </MenuItem>
                 {classes?.map((clazz) => (
                   <MenuItem key={clazz.id} value={clazz.id}>
-                    {clazz.className} - {clazz.teacherName}
+                    {" "}
+                    {clazz.name} - {clazz.description}{" "}
                   </MenuItem>
                 ))}
               </Select>
@@ -213,7 +224,9 @@ const StudentEnrollment = () => {
           <Button
             onClick={handleEnroll}
             color="primary"
-            disabled={loading || !selectedCourseId || !selectedClassId}
+            disabled={
+              loading || !selectedCourseId || !selectedClassId || !studentId
+            }
             startIcon={loading ? <CircularProgress size={20} /> : null}
           >
             {loading ? "Đang đăng ký..." : "Đăng ký"}
@@ -237,6 +250,8 @@ const StudentEnrollment = () => {
                     <TableCell>Tên lớp</TableCell>
                     <TableCell>Môn học</TableCell>
                     <TableCell>Mô tả</TableCell>
+                    <TableCell>Thứ</TableCell>
+                    <TableCell>Thời gian</TableCell>
                     <TableCell>Giáo viên</TableCell>
                   </TableRow>
                 </TableHead>
@@ -244,10 +259,18 @@ const StudentEnrollment = () => {
                   {enrolledClasses.map((enrollment, index) => (
                     <TableRow key={enrollment.id}>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{enrollment.className}</TableCell>
-                      <TableCell>{enrollment.courseName}</TableCell>
-                      <TableCell>{enrollment.courseDescription}</TableCell>
-                      <TableCell>{enrollment.teacherName}</TableCell>
+                      <TableCell>{enrollment.name || "N/A"}</TableCell>{" "}
+                      <TableCell>{enrollment.className || "N/A"}</TableCell>
+                      <TableCell>
+                        {enrollment.description || "N/A"}
+                      </TableCell>{" "}
+                      <TableCell>{enrollment.dayName || "N/A"}</TableCell>
+                      <TableCell>
+                        {enrollment.timeStart && enrollment.timeEnd
+                          ? `${enrollment.timeStart} - ${enrollment.timeEnd}`
+                          : "N/A"}
+                      </TableCell>
+                      <TableCell>{enrollment.teacherName || "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

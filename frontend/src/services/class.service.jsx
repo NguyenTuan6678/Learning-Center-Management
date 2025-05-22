@@ -29,14 +29,14 @@ export const deleteClass = (id) => {
 
 export const getClassById = (id) => {
   return api.makeRequest({
-    url: `${CLASS_API_BASE_URL}/get/${id}`,
+    url: `/api/class/get/${id}`,
     method: "GET",
   });
 };
 
 export const searchClassByName = (name) => {
   return api.makeRequest({
-    url: `${CLASS_API_BASE_URL}/search?name=${name}`,
+    url: `/api/class/search?name=${name}`,
     method: "GET",
   });
 };

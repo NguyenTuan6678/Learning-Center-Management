@@ -26,14 +26,14 @@ import {
   Visibility as VisibilityIcon,
 } from "@mui/icons-material";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import { getLocalData } from "../../../services/localStorage";
 import { VNPayService } from "../../../services/vnpay.service";
 import { getAllBillDetailsForStudent } from "../../../services/billdetail.service";
 
 const StudentBills = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [bills, setBills] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedBill, setSelectedBill] = useState(null);
@@ -41,20 +41,11 @@ const StudentBills = () => {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [searchText, setSearchText] = useState("");
 
-  // Lấy trực tiếp từ Redux store, không cần check lại
   const studentId = useSelector(
     (state) => state.auth.studentId || getLocalData("studentId")
   );
 
-  // console.log("Current studentId:", studentId); // Kiểm tra giá trị
-
-  // console.log(
-  //   "Full auth state:",
-  //   useSelector((state) => state.auth)
-  // );
-  // console.log("LocalStorage studentId:", getLocalData("studentId"));
   useEffect(() => {
-    // console.log("studentId inside useEffect:", studentId);
     const fetchBills = async () => {
       if (!studentId) {
         console.error("StudentId is missing!");
@@ -116,11 +107,11 @@ const StudentBills = () => {
     return <Chip label={label} color={color} variant="outlined" />;
   };
 
-  const filteredBills = bills.filter(
-    (bill) =>
-      bill.content?.toLowerCase().includes(searchText.toLowerCase()) ||
-      bill.id?.toLowerCase().includes(searchText.toLowerCase())
-  );
+  // const filteredBills = bills.filter(
+  //   (bill) =>
+  //     bill.content?.toLowerCase().includes(searchText.toLowerCase()) ||
+  //     bill.id?.toLowerCase().includes(searchText.toLowerCase())
+  // );
 
   return (
     <Box sx={{ p: 3 }}>

@@ -67,3 +67,10 @@ export const getAllTeacherSer = () => {
     method: "GET",
   });
 };
+
+export const getAvailableAccounts = () => {
+  return api.makeRequest({
+    url: "/api/account/available-teacher",
+    method: "GET",
+  });
+};

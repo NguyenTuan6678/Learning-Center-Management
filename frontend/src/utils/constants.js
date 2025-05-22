@@ -59,10 +59,6 @@ export const testimonials = [
 export const navItems = [
   { label: "Trang chủ", href: "#" },
   { label: "Giới thiệu", href: "#" },
-  { label: "Đào tạo", href: "#" },
-  { label: "Nghiên cứu", href: "#" },
-  { label: "Hoạt động", href: "#" },
-  { label: "Tin tức", href: "#" },
 ];
 
 export const resourcesLinks = [
