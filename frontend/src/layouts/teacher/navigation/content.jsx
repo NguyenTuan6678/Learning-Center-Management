@@ -11,24 +11,17 @@ const AppContent = ({ children }) => {
       sx={{
         backgroundColor: colors.primary[400],
         flexGrow: 1,
-        // p: 3,
-        // mt: { xs: "0", sm: "0" }, // Điều chỉnh theo chiều cao header
-        // ml: { xs: "10px", sm: "10px" }, // Điều chỉnh theo chiều rộng sidebar
         transition: theme.transitions.create("margin", {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,
         }),
-        ...(theme.direction === "rtl" &&
-          {
-            // mr: { sm: "250px" },
-            // ml: { sm: 0 },
-          }),
+        ...(theme.direction === "rtl" && {}),
       }}
     >
       <Box
         sx={{
           // p: 3,
-          minHeight: "calc(100px - 100  px)", // Điều chỉnh theo layout
+          minHeight: "calc(100px - 100  px)",
           // backgroundColor: colors.primary[400],
           // borderRadius: "12px",
           // maxWidth: "1200px",

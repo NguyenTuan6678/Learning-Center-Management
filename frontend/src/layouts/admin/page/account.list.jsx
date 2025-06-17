@@ -277,7 +277,7 @@ const ManageAccounts = () => {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between", // Đẩy nút sang bên phải
+          justifyContent: "space-between",
           alignItems: "center",
           marginBottom: "16px",
           flexWrap: "wrap",
@@ -300,14 +300,14 @@ const ManageAccounts = () => {
           style={{ width: 250 }}
         />
         <Button
-          onClick={() => setShowCreateCard(!showCreateCard)} // Toggle hiển thị thẻ
+          onClick={() => setShowCreateCard(!showCreateCard)}
           color="primary"
           startIcon={<AddIcon />}
         >
           {showCreateCard ? "Ẩn Thêm Tài Khoản" : "Thêm Tài Khoản"}
         </Button>
       </div>
-      {showCreateCard && ( // Chỉ hiển thị thẻ khi showCreateCard là true
+      {showCreateCard && (
         <Card sx={{ marginBottom: "20px" }}>
           <CardHeader title="Thêm Tài Khoản Mới" />
           <CardContent>
@@ -510,7 +510,6 @@ const ManageAccounts = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteConfirmation.open}
         onClose={cancelDelete}

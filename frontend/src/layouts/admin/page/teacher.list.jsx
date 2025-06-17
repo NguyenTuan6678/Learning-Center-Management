@@ -394,7 +394,7 @@ const ManageTeachers = () => {
 
     const newErrors = {};
 
-    if (!newteacherForm.name.trim()) {
+    if (!newteacherForm.teacherName.trim()) {
       newErrors.teacherName = "Vui lòng nhập tên giáo viên!";
 
       isValid = false;

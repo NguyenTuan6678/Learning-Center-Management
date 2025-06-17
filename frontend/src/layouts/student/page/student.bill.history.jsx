@@ -71,7 +71,7 @@ const PaidAndCancelledBills = () => {
               <TableCell>Số tiền</TableCell>
               <TableCell>Trạng thái</TableCell>
               <TableCell>Ngày tạo</TableCell>
-              <TableCell>Ngày cập nhật</TableCell> {/* updatedAt */}
+              <TableCell>Ngày cập nhật</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

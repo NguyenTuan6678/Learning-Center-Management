@@ -19,3 +19,10 @@ export const getall = (payload) => {
     data: payload,
   });
 };
+
+export const deletebill = (payload) => {
+  return api.makeRequest({
+    url: `/api/bill/delete/${payload}`,
+    method: "DELETE",
+  });
+};

@@ -36,6 +36,7 @@ import {
   TextField,
 } from "@mui/material";
 import { debounce } from "lodash";
+import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // <-- THÊM MỚI
 import {
@@ -52,6 +53,7 @@ import { getAllDays } from "../../../services/day.service.jsx";
 import { getAllTeacherSer as getAllTeachers } from "../../../services/teacher.service.jsx";
 import { getAllTimes } from "../../../services/time.service.jsx";
 import ClassDetail from "./class.detail.jsx";
+import { getLocalData } from "../../../services/localStorage/index.jsx";
 
 const ManageClasses = () => {
   const [selectedClass, setSelectedClass] = useState(null);
@@ -101,12 +103,15 @@ const ManageClasses = () => {
   const [times, setTimes] = useState([]);
   const [dropdownsLoading, setDropdownsLoading] = useState(false);
 
+  const teacherId = useSelector(
+    (state) => state.auth.teacherId || getLocalData("teacherId")
+  );
+
   const handleClassRowClick = (classId) => {
     console.log("Clicked Class ID:", classId, "Type:", typeof classId);
     navigate(`/classes/${classId}`);
   };
 
-  // Hàm đóng ClassDetail
   const handleCloseDetail = () => {
     setSelectedClass(null);
   };
@@ -386,6 +391,10 @@ const ManageClasses = () => {
   };
 
   useEffect(() => {
+    if (!teacherId) {
+      console.error("TeacherId is missing");
+      return;
+    }
     const loadInitialData = async () => {
       setDropdownsLoading(true);
       try {
@@ -413,7 +422,7 @@ const ManageClasses = () => {
       }
     };
     loadInitialData();
-  }, []);
+  }, [teacherId]);
 
   useEffect(() => {
     fetchClasses(paginationInfo.page, paginationInfo.rowsPerPage, searchText);
@@ -442,11 +451,6 @@ const ManageClasses = () => {
       fetchClasses(0, paginationInfo.rowsPerPage, searchText);
     }
   }, [filter.type, filter.value, paginationInfo.rowsPerPage, searchText]);
-
-  // THÊM MỚI: handle click on class row to navigate to detail page
-  // const handleClassRowClick = (classId) => {
-  //   navigate(`/classes/${classId}`); // Navigate to the new detail page
-  // };
 
   return (
     <div style={{ width: "100%", padding: "20px" }}>
@@ -692,8 +696,8 @@ const ManageClasses = () => {
               dataSource.map((row, index) => (
                 <TableRow
                   key={row.id}
-                  onClick={() => handleClassRowClick(row.id)} // THÊM MỚI: onClick để điều hướng
-                  style={{ cursor: "pointer" }} // THÊM MỚI: Con trỏ thành pointer
+                  onClick={() => handleClassRowClick(row.id)}
+                  style={{ cursor: "pointer" }}
                 >
                   <TableCell>
                     {index +
@@ -711,7 +715,7 @@ const ManageClasses = () => {
                   <TableCell>
                     <IconButton
                       onClick={(e) => {
-                        e.stopPropagation(); // Ngăn chặn sự kiện click hàng
+                        e.stopPropagation();
                         handleDeleteClick(row.id, row.name);
                       }}
                       color="error"
@@ -720,7 +724,7 @@ const ManageClasses = () => {
                     </IconButton>
                     <IconButton
                       onClick={(e) => {
-                        e.stopPropagation(); // Ngăn chặn sự kiện click hàng
+                        e.stopPropagation();
                         handleEditClick(row);
                       }}
                     >

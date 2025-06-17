@@ -1,6 +1,6 @@
 import { Card, colors } from "@mui/material";
 import { alpha } from "@mui/material/styles";
-import React, { forwardRef } from "react";
+import { forwardRef } from "react";
 
 const MainCard = forwardRef(
   (

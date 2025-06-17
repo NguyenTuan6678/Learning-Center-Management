@@ -53,6 +53,10 @@ const ManageBills = () => {
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [selectedParentId, setSelectedParentId] = useState("");
   const [selectedBillStatus, setSelectedBillStatus] = useState("");
+  const [deleteDialog, setDeleteDialog] = useState({
+    open: false,
+    billId: null,
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -86,6 +90,13 @@ const ManageBills = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteClick = (id) => {
+    setDeleteDialog({
+      open: true,
+      billId: id,
+    });
   };
 
   const fetchBillDetail = async (billId) => {

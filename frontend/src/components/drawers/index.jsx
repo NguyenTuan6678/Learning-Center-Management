@@ -1,6 +1,4 @@
-import React from "react";
-import { Drawer, Form, Input, Button, Popconfirm } from "antd";
-import { create } from "../../services/student.service";
+import { Button, Drawer, Form, Input, Popconfirm } from "antd";
 
 const AddStudentDrawer = ({ open, onClose, onCreate }) => {
   const [form] = Form.useForm();

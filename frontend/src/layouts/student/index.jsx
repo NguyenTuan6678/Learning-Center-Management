@@ -49,23 +49,6 @@ const StudentDashboard = () => {
     );
   };
 
-  // return (
-  //   <Layout style={{ minHeight: "100vh", flexDirection: "column" }}>
-  //     <AppHeader />
-  //     <Layout style={{ flexDirection: "row", flex: 1 }}>
-  //       <AppSider
-  //         onMenuItemClick={handleMenuItemClick}
-  //         selectedKeys={[selectedMenuItem]}
-  //       />
-  //       <Layout style={{ flexDirection: "column", flex: 1, marginLeft: 0 }}>
-  //         <BreadCrumb selectedMenuItem={selectedMenuItem} />
-  //         <AppContent>{renderContent()}</AppContent>
-  //         <AppFooter style={{ textAlign: "right", padding: "0 16px 24px" }} />
-  //       </Layout>
-  //     </Layout>
-  //   </Layout>
-  // );
-
   return (
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
