@@ -31,7 +31,7 @@ import {
   Search as SearchIcon,
   Add as AddIcon,
 } from "@mui/icons-material";
-import { getall } from "../../../services/bill.service";
+import { getall, create as createBill } from "../../../services/bill.service";
 import {
   get as getBillDetail,
   update as updateBillDetail,
@@ -57,6 +57,11 @@ const ManageBills = () => {
     open: false,
     billId: null,
   });
+  const [openCreateDialog, setOpenCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    content: "",
+    status: "PENDING",
+  });
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -71,7 +76,7 @@ const ManageBills = () => {
     setSnackbar({ ...snackbar, open: false });
   };
 
-  const billStatusOptions = ["PENDING_PAYMENT", "PAID", "CANCELLED"];
+  const billStatusOptions = ["PENDING", "PAID", "CANCELLED"];
 
   const fetchBills = async () => {
     setLoading(true);
@@ -117,7 +122,7 @@ const ManageBills = () => {
 
   const fetchStudents = async () => {
     try {
-      const res = await getAllStudents();
+      const res = await getAllStudents({ page: 0, size: 1000 });
       setStudents(res?.data?.rows || []);
     } catch (error) {
       console.error("Failed to fetch students:", error);
@@ -145,7 +150,7 @@ const ManageBills = () => {
     setLoading(true);
     try {
       await updateBillDetail({
-        id: billDetailData?.billId,
+        id: billDetailData?.id,
         description: billDetailData?.description,
         amount: billDetailData?.amount,
         currency: billDetailData?.currency,
@@ -171,6 +176,36 @@ const ManageBills = () => {
     setSelectedStudentId("");
     setSelectedParentId("");
     setSelectedBillStatus("");
+  };
+
+  const handleCreateDialogClose = () => {
+    setOpenCreateDialog(false);
+    setCreateForm({
+      content: "",
+      status: "PENDING",
+    });
+  };
+
+  const handleCreateBill = async () => {
+    if (!createForm.content.trim()) {
+      showSnackbar("Vui lòng nhập nội dung hóa đơn!", "error");
+      return;
+    }
+    setLoading(true);
+    try {
+      await createBill({
+        content: createForm.content,
+        status: createForm.status,
+      });
+      showSnackbar("Thêm hóa đơn thành công!");
+      handleCreateDialogClose();
+      fetchBills();
+    } catch (error) {
+      console.error("Failed to create bill:", error);
+      showSnackbar("Lỗi khi thêm hóa đơn!", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStudentChange = (event) => {
@@ -242,9 +277,9 @@ const ManageBills = () => {
           size="small"
         />
 
-        {/* <Button variant="contained" startIcon={<AddIcon />} onClick={() => {}}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpenCreateDialog(true)}>
           Thêm hoá đơn
-        </Button> */}
+        </Button>
       </div>
 
       <TableContainer component={Paper}>
@@ -391,13 +426,13 @@ const ManageBills = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Trạng thái hóa đơn</InputLabel>
               <Select
-                value={selectedBillStatus}
+                value={selectedBillStatus || ""}
                 onChange={handleBillStatusChange}
                 label="Trạng thái hóa đơn"
               >
                 {billStatusOptions.map((status) => (
                   <MenuItem key={status} value={status}>
-                    {status === "PENDING_PAYMENT"
+                    {status === "PENDING"
                       ? "Chờ thanh toán"
                       : status === "PAID"
                       ? "Đã thanh toán"
@@ -412,7 +447,7 @@ const ManageBills = () => {
             <FormControl fullWidth margin="normal">
               <InputLabel>Học sinh</InputLabel>
               <Select
-                value={selectedStudentId}
+                value={selectedStudentId || ""}
                 onChange={handleStudentChange}
                 label="Học sinh"
                 required
@@ -421,7 +456,7 @@ const ManageBills = () => {
                   Chọn học sinh
                 </MenuItem>
                 {students.map((student) => (
-                  <MenuItem key={student.id} value={student.id}>
+                  <MenuItem key={student.studentId} value={student.studentId}>
                     {student.name}
                   </MenuItem>
                 ))}
@@ -454,6 +489,69 @@ const ManageBills = () => {
           </Button>
           <Button
             onClick={handleUpdateBillDetail}
+            color="primary"
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : "Lưu"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Create Bill Dialog */}
+      <Dialog
+        open={openCreateDialog}
+        onClose={handleCreateDialogClose}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>Thêm hoá đơn mới</DialogTitle>
+        <DialogContent>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "16px",
+              paddingTop: "16px",
+            }}
+          >
+            <TextField
+              label="Nội dung"
+              value={createForm.content}
+              onChange={(e) =>
+                setCreateForm({
+                  ...createForm,
+                  content: e.target.value,
+                })
+              }
+              fullWidth
+              margin="normal"
+              required
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Trạng thái</InputLabel>
+              <Select
+                value={createForm.status || ""}
+                onChange={(e) =>
+                  setCreateForm({
+                    ...createForm,
+                    status: e.target.value,
+                  })
+                }
+                label="Trạng thái"
+              >
+                <MenuItem value="PENDING">Chờ thanh toán</MenuItem>
+                <MenuItem value="PAID">Đã thanh toán</MenuItem>
+                <MenuItem value="CANCELLED">Đã huỷ</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCreateDialogClose} color="secondary">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleCreateBill}
             color="primary"
             disabled={loading}
           >

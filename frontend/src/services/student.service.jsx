@@ -20,13 +20,14 @@ export const update = (payload, data) => {
   });
 };
 
-export const getall = (payload) => {
-  const page = payload.page || 0;
-  const size = payload.size || 10;
+export const getall = (payload = {}) => {
+  const safePayload = payload || {};
+  const page = safePayload.page || 0;
+  const size = safePayload.size || 10;
   return api.makeRequest({
     url: `/api/student/studentList?page=${page}&size=${size}`,
     method: "GET",
-    data: payload,
+    data: safePayload,
   });
 };
 

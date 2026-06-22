@@ -14,9 +14,10 @@ import ManageAdminLearningOutcomes from "./page/student.learningoutcome";
 import ManageTeachers from "./page/teacher.list";
 import ManageCourses from "./page/course.list";
 import ManageClasses from "./page/class.list";
+import AdminDashboardOverview from "./page/admin.dashboard";
 
 const componentMap = {
-  dashboard: () => <Box sx={{ p: 3, minHeight: 360 }}>Dashboard Content</Box>,
+  dashboard: (onNavigate) => <AdminDashboardOverview onNavigate={onNavigate} />,
   manageStudents: () => <ManageStudents />,
   manageAccounts: () => <ManageAccounts />,
   manageParents: () => <ManageParents />,
@@ -29,7 +30,6 @@ const componentMap = {
 
 const AdminDashboard = () => {
   const [theme, colorMode] = useMode();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard");
 
   const handleMenuItemClick = (e) => {
@@ -37,9 +37,12 @@ const AdminDashboard = () => {
   };
 
   const renderContent = () => {
-    const ComponentToRender = componentMap[selectedMenuItem];
-    return ComponentToRender ? (
-      <ComponentToRender />
+    const componentFn = componentMap[selectedMenuItem];
+    if (selectedMenuItem === "dashboard" && componentFn) {
+      return componentFn(setSelectedMenuItem);
+    }
+    return componentFn ? (
+      componentFn()
     ) : (
       <Box sx={{ p: 3, minHeight: 360 }}>{selectedMenuItem} Content</Box>
     );
@@ -49,9 +52,8 @@ const AdminDashboard = () => {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ display: "flex" }}>
+        <Box sx={{ display: "flex", minHeight: "100vh" }}>
           <AppSider
-            isOpen={isSidebarOpen}
             onMenuItemClick={handleMenuItemClick}
             selectedKeys={[selectedMenuItem]}
           />
@@ -60,32 +62,30 @@ const AdminDashboard = () => {
             component="main"
             sx={{
               flexGrow: 1,
-              p: 3,
-              transition: theme.transitions.create("margin", {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.leavingScreen,
-              }),
-              marginLeft: { sm: isSidebarOpen ? "0" : "80px" },
-              width: { sm: `calc(100% - ${isSidebarOpen ? 0 : 40}px)` },
+              display: "flex",
+              flexDirection: "column",
+              bgcolor: theme.palette.mode === "dark" ? "background.default" : "#f8fafc",
+              minHeight: "100vh",
+              overflowX: "hidden",
             }}
           >
-            <AppHeader
-              onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-            />
+            <AppHeader />
 
             <Box
               sx={{
+                flexGrow: 1,
+                p: 3,
                 display: "flex",
                 flexDirection: "column",
-                minHeight: "calc(100vh - 64px)",
+                gap: 2,
               }}
             >
               <BreadCrumb selectedMenuItem={selectedMenuItem} />
 
               <AppContent>{renderContent()}</AppContent>
-
-              <AppFooter />
             </Box>
+
+            <AppFooter />
           </Box>
         </Box>
       </ThemeProvider>

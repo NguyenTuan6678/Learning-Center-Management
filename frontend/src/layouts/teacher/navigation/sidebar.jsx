@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   Box,
   Typography,
@@ -11,6 +11,7 @@ import {
   ListItemText,
   Collapse,
   useTheme,
+  Avatar,
 } from "@mui/material";
 import {
   HomeOutlined,
@@ -20,13 +21,31 @@ import {
   ExpandLess,
   ExpandMore,
   AccountCircle,
+  SettingsOutlined as SettingsIcon,
+  ExitToAppOutlined as LogoutIcon,
 } from "@mui/icons-material";
-import { tokens } from "../../../themes/theme";
+import { tokens, ColorModeContext } from "../../../themes/theme";
 import logo from "../../../assets/imgs/small45.png";
+import { logout } from "../../../services/auth.service";
+import { setLocalData } from "../../../services/localStorage";
+import { isLoggedInText } from "../../../utils/constants";
 
 const AppSider = ({ onMenuItemClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
+  const colorMode = useContext(ColorModeContext);
+
+  const handleSignOut = async () => {
+    try {
+      const response = await logout();
+      if (response.status === 200) {
+        setLocalData(isLoggedInText, false);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API đăng xuất:", error);
+    }
+  };
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
   const [openSubmenus, setOpenSubmenus] = useState({
@@ -176,46 +195,42 @@ const AppSider = ({ onMenuItemClick }) => {
   return (
     <Box
       sx={{
-        ".ps-sidebar-inner": {
-          background: `${colors.primary[400]} !important`,
-        },
-        ".ps-icon-wrapper": {
-          backgroundColor: "transparent !important",
-        },
-        ".ps-inner-item": {
-          padding: "5px 35px 5px 20px !important",
-        },
-        ".ps-inner-item:hover": {
-          color: "#868dfb !important",
-        },
-        ".ps-menu-item.active": {
-          color: "#6870fa !important",
-        },
-        width: isCollapsed ? "80px" : "250px",
+        width: isCollapsed ? "80px" : "260px",
         height: "100vh",
-        transition: "width 0.3s ease",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: theme.palette.mode === "dark" ? colors.primary[600] : "#ffffff",
+        borderRight: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#e2e8f0"}`,
+        boxShadow: "4px 0 20px rgba(0,0,0,0.01)",
+        transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        position: "sticky",
+        top: 0,
+        left: 0,
+        overflow: "hidden",
       }}
     >
       {/* Header */}
       <Box
         sx={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: isCollapsed ? "center" : "space-between",
           alignItems: "center",
-          p: 2,
+          px: isCollapsed ? 1 : 2.5,
+          py: 2,
           height: "70px",
+          borderBottom: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}`,
         }}
       >
         {!isCollapsed && (
-          <Box display="flex" alignItems="center" gap={1}>
-            <img src={logo} alt="Logo" style={{ width: 30, height: 30 }} />
-            <Typography variant="h3" color={colors.grey[100]}>
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <img src={logo} alt="Logo" style={{ width: 32, height: 32, borderRadius: "6px" }} />
+            <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: "0.5px", color: theme.palette.mode === "dark" ? "#fff" : "#15803d" }}>
               TEACHER
             </Typography>
           </Box>
         )}
-        <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-          <MenuOutlined sx={{ color: colors.grey[100] }} />
+        <IconButton onClick={() => setIsCollapsed(!isCollapsed)} sx={{ color: theme.palette.mode === "dark" ? "#94a3b8" : "#64748b" }}>
+          <MenuOutlined />
         </IconButton>
       </Box>
 
@@ -223,24 +238,59 @@ const AppSider = ({ onMenuItemClick }) => {
       {!isCollapsed && (
         <Box
           sx={{
-            p: 2,
+            p: 3,
             textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            borderBottom: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}`,
           }}
         >
-          <AccountCircle sx={{ fontSize: 60, color: colors.grey[100] }} />
+          <Box sx={{ position: "relative", mb: 1.5 }}>
+            <Avatar
+              sx={{
+                width: 64,
+                height: 64,
+                bgcolor: "#ea580c",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                border: "2px solid #fff",
+              }}
+            >
+              GV
+            </Avatar>
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 2,
+                right: 2,
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                bgcolor: "#10b981",
+                border: "2px solid #fff",
+              }}
+            />
+          </Box>
           <Typography
-            variant="h3"
-            color={colors.grey[100]}
-            fontWeight="bold"
-            sx={{ mt: 1 }}
-          ></Typography>
-          <Typography variant="h5" color={colors.greenAccent[500]}></Typography>
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+            }}
+          >
+            Nguyễn Văn Giáo Viên
+          </Typography>
+          <Typography variant="h6" sx={{ color: colors.greenAccent[500], fontWeight: 600, mt: 0.5 }}>
+            Giáo viên
+          </Typography>
         </Box>
       )}
 
       {/* Menu Items */}
-      <Box sx={{ overflow: "auto", flexGrow: 1 }}>
-        <List>
+      <Box sx={{ overflowY: "auto", flexGrow: 1, px: 1.5, py: 2 }}>
+        <List sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
           {menuItems.map((item) => (
             <Box key={item.title}>
               {item.submenu ? (
@@ -250,31 +300,38 @@ const AppSider = ({ onMenuItemClick }) => {
                       handleSubmenuToggle(item.title.toLowerCase())
                     }
                     sx={{
-                      minHeight: 48,
+                      minHeight: 44,
+                      borderRadius: "10px",
                       justifyContent: isCollapsed ? "center" : "initial",
-                      px: 2.5,
-                      color: colors.grey[100],
+                      px: 2,
+                      color: theme.palette.mode === "dark" ? "#94a3b8" : "#475569",
                       "&:hover": {
-                        color: "#868dfb",
+                        bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                        color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
                       },
                     }}
                   >
                     <ListItemIcon
                       sx={{
                         minWidth: 0,
-                        mr: isCollapsed ? "auto" : 3,
+                        mr: isCollapsed ? 0 : 2,
                         color: "inherit",
+                        display: "flex",
+                        alignItems: "center",
                       }}
                     >
                       {item.icon}
                     </ListItemIcon>
                     {!isCollapsed && (
                       <>
-                        <ListItemText primary={item.title} />
+                        <ListItemText 
+                          primary={item.title} 
+                          primaryTypographyProps={{ fontSize: "0.95rem", fontWeight: 600 }}
+                        />
                         {openSubmenus[item.title.toLowerCase()] ? (
-                          <ExpandLess />
+                          <ExpandLess sx={{ fontSize: 18 }} />
                         ) : (
-                          <ExpandMore />
+                          <ExpandMore sx={{ fontSize: 18 }} />
                         )}
                       </>
                     )}
@@ -284,32 +341,60 @@ const AppSider = ({ onMenuItemClick }) => {
                     timeout="auto"
                     unmountOnExit
                   >
-                    <List component="div" disablePadding>
-                      {item.submenu.map((subItem) => (
-                        <ListItemButton
-                          key={subItem.title}
-                          selected={selected === subItem.title}
-                          onClick={subItem.onClick}
-                          sx={{
-                            pl: 4,
-                            color: colors.grey[100],
-                            "&.Mui-selected": {
-                              color: "#6870fa",
-                              backgroundColor: "transparent",
-                            },
-                            "&:hover": {
-                              color: "#868dfb",
-                            },
-                          }}
-                        >
-                          <ListItemIcon
-                            sx={{ minWidth: 0, mr: 3, color: "inherit" }}
+                    <List component="div" disablePadding sx={{ mt: 0.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
+                      {item.submenu.map((subItem) => {
+                        const isSelected = selected === subItem.title;
+                        return (
+                          <ListItemButton
+                            key={subItem.title}
+                            selected={isSelected}
+                            onClick={subItem.onClick}
+                            sx={{
+                              pl: 4,
+                              pr: 2,
+                              minHeight: 40,
+                              borderRadius: "8px",
+                              color: isSelected 
+                                ? (theme.palette.mode === "dark" ? "#fff" : "#ea580c")
+                                : (theme.palette.mode === "dark" ? "#94a3b8" : "#64748b"),
+                              bgcolor: isSelected 
+                                ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                                : "transparent",
+                              "&.Mui-selected": {
+                                bgcolor: isSelected 
+                                  ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                                  : "transparent",
+                                "&:hover": {
+                                  bgcolor: isSelected 
+                                    ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.25)" : "rgba(234, 88, 12, 0.12)")
+                                    : "transparent",
+                                }
+                              },
+                              "&:hover": {
+                                color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                              },
+                            }}
                           >
-                            {subItem.icon}
-                          </ListItemIcon>
-                          <ListItemText primary={subItem.title} />
-                        </ListItemButton>
-                      ))}
+                            <ListItemIcon
+                              sx={{ 
+                                minWidth: 0, 
+                                mr: 2, 
+                                color: "inherit",
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: "1.2rem",
+                              }}
+                            >
+                              {subItem.icon}
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={subItem.title} 
+                              primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 550 }}
+                            />
+                          </ListItemButton>
+                        );
+                      })}
                     </List>
                   </Collapse>
                 </>
@@ -318,33 +403,99 @@ const AppSider = ({ onMenuItemClick }) => {
                   selected={selected === item.title}
                   onClick={item.onClick}
                   sx={{
-                    minHeight: 48,
+                    minHeight: 44,
+                    borderRadius: "10px",
                     justifyContent: isCollapsed ? "center" : "initial",
-                    px: 2.5,
-                    color: colors.grey[100],
+                    px: 2,
+                    color: selected === item.title
+                      ? (theme.palette.mode === "dark" ? "#fff" : "#ea580c")
+                      : (theme.palette.mode === "dark" ? "#94a3b8" : "#475569"),
+                    bgcolor: selected === item.title
+                      ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                      : "transparent",
                     "&.Mui-selected": {
-                      color: "#6870fa",
-                      backgroundColor: "transparent",
+                      bgcolor: selected === item.title
+                        ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                        : "transparent",
                     },
                     "&:hover": {
-                      color: "#868dfb",
+                      color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
                     },
                   }}
                 >
                   <ListItemIcon
                     sx={{
                       minWidth: 0,
-                      mr: isCollapsed ? "auto" : 3,
+                      mr: isCollapsed ? 0 : 2,
                       color: "inherit",
+                      display: "flex",
+                      alignItems: "center",
                     }}
                   >
                     {item.icon}
                   </ListItemIcon>
-                  {!isCollapsed && <ListItemText primary={item.title} />}
+                  {!isCollapsed && (
+                    <ListItemText 
+                      primary={item.title} 
+                      primaryTypographyProps={{ fontSize: "0.95rem", fontWeight: 600 }}
+                    />
+                  )}
                 </ListItemButton>
               )}
             </Box>
           ))}
+        </List>
+      </Box>
+
+      {/* Bottom Settings & Logout Section */}
+      <Box sx={{ mt: "auto", p: 2, borderTop: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}` }}>
+        <List sx={{ p: 0, display: "flex", flexDirection: "column", gap: 0.5 }}>
+          {/* Settings / Toggle Theme */}
+          <ListItemButton
+            onClick={colorMode.toggleColorMode}
+            sx={{
+              minHeight: 38,
+              borderRadius: "8px",
+              justifyContent: isCollapsed ? "center" : "initial",
+              px: 1.5,
+              color: "text.secondary",
+              "&:hover": { bgcolor: "rgba(0,0,0,0.02)" },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 1.5, color: "inherit" }}>
+              <SettingsIcon sx={{ fontSize: 20 }} />
+            </ListItemIcon>
+            {!isCollapsed && (
+              <ListItemText
+                primary="Cấu hình"
+                primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 600 }}
+              />
+            )}
+          </ListItemButton>
+
+          {/* Log out */}
+          <ListItemButton
+            onClick={handleSignOut}
+            sx={{
+              minHeight: 38,
+              borderRadius: "8px",
+              justifyContent: isCollapsed ? "center" : "initial",
+              px: 1.5,
+              color: "#ef4444",
+              "&:hover": { bgcolor: "rgba(239, 68, 68, 0.05)" },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 1.5, color: "inherit" }}>
+              <LogoutIcon sx={{ fontSize: 20 }} />
+            </ListItemIcon>
+            {!isCollapsed && (
+              <ListItemText
+                primary="Đăng xuất"
+                primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 600 }}
+              />
+            )}
+          </ListItemButton>
         </List>
       </Box>
     </Box>

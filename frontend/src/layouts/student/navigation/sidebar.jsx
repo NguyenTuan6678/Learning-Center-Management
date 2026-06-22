@@ -1,246 +1,453 @@
-import { useState, useMemo } from "react";
-import { Sidebar, Menu, MenuItem, SubMenu } from "react-pro-sidebar";
-import { Box, IconButton, Typography, useTheme } from "@mui/material";
+import { useState, useContext } from "react";
+import {
+  Box,
+  Typography,
+  IconButton,
+  Divider,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Collapse,
+  useTheme,
+  Avatar,
+} from "@mui/material";
 import {
   HomeOutlined,
-  PeopleOutlined,
   MenuOutlined,
   CalendarTodayOutlined,
-  AssignmentOutlined,
   SchoolOutlined,
   ReceiptOutlined,
   AssessmentOutlined,
-  PaymentOutlined,
   HistoryOutlined,
   GradeOutlined,
   BookOutlined,
   MonetizationOnOutlined,
+  ExpandLess,
+  ExpandMore,
+  SettingsOutlined as SettingsIcon,
+  ExitToAppOutlined as LogoutIcon,
 } from "@mui/icons-material";
-import { tokens } from "../../../themes/theme";
+import { tokens, ColorModeContext } from "../../../themes/theme";
 import logo from "../../../assets/imgs/small45.png";
-
-const SidebarItem = ({
-  title,
-  icon,
-  selected,
-  setSelected,
-  onClickKey,
-  to,
-}) => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-
-  const handleClick = () => {
-    setSelected(title);
-    onClickKey?.();
-  };
-
-  return (
-    <MenuItem
-      icon={icon}
-      style={{ color: colors.grey[100] }}
-      active={selected === title}
-      onClick={handleClick}
-    >
-      <Typography>{title}</Typography>
-    </MenuItem>
-  );
-};
-
-const SidebarHeader = ({ isCollapsed, setIsCollapsed, colors }) => {
-  return (
-    <MenuItem
-      onClick={() => setIsCollapsed(!isCollapsed)}
-      icon={isCollapsed ? <MenuOutlined /> : undefined}
-      style={{
-        margin: "10px 0 20px 0",
-        color: colors.grey[100],
-      }}
-    >
-      {!isCollapsed && (
-        <Box
-          display="flex"
-          justifyContent="space-between"
-          alignItems="center"
-          ml="15px"
-        >
-          <div className="logo" style={{ width: 30, height: 30 }}>
-            <img src={logo} alt="Logo" />
-          </div>
-          <Typography variant="h3" color={colors.grey[100]}>
-            STUDENT
-          </Typography>
-          <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-            <MenuOutlined />
-          </IconButton>
-        </Box>
-      )}
-    </MenuItem>
-  );
-};
-
-const UserProfile = ({ isCollapsed, colors }) => {
-  if (isCollapsed) return null;
-
-  return (
-    <Box mb="25px" textAlign="center">
-      <Typography
-        variant="h2"
-        color={colors.grey[100]}
-        fontWeight="bold"
-        sx={{ m: "10px 0 0 0" }}
-      >
-        Harry Nguyen
-      </Typography>
-      <Typography variant="h5" color={colors.greenAccent[500]}>
-        Student
-      </Typography>
-    </Box>
-  );
-};
-
-const menuItems = [
-  {
-    title: "Tổng quan",
-    icon: <HomeOutlined />,
-    key: "dashboard",
-    to: "/dashboard",
-  },
-  {
-    title: "Lịch học",
-    icon: <CalendarTodayOutlined />,
-    key: "manageStudents",
-    to: "/calendar",
-  },
-  {
-    title: "Học tập",
-    icon: <SchoolOutlined />,
-    isSubMenu: true,
-    items: [
-      {
-        title: "Đăng ký môn học",
-        icon: <BookOutlined />,
-        key: "enrollmentClass",
-        to: "/register",
-      },
-      {
-        title: "Bảng điểm",
-        icon: <GradeOutlined />,
-        key: "record",
-        to: "/record",
-      },
-      {
-        title: "Đánh giá học tập",
-        icon: <AssessmentOutlined />,
-        key: "reviews",
-        to: "/reviews",
-      },
-    ],
-  },
-  {
-    title: "Học phí",
-    icon: <MonetizationOnOutlined />,
-    isSubMenu: true,
-    items: [
-      {
-        title: "Hoá đơn học phí",
-        icon: <ReceiptOutlined />,
-        key: "manageBills",
-        to: "/bills",
-      },
-      {
-        title: "Lịch sử thanh toán",
-        icon: <HistoryOutlined />,
-        key: "manageBillsHistory",
-        to: "/paymentHistory",
-      },
-    ],
-  },
-];
+import { logout } from "../../../services/auth.service";
+import { setLocalData } from "../../../services/localStorage";
+import { isLoggedInText } from "../../../utils/constants";
 
 const AppSider1 = ({ onMenuItemClick }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [selected, setSelected] = useState("Dashboard");
+  const colorMode = useContext(ColorModeContext);
 
-  const sidebarStyles = useMemo(
-    () => ({
-      ".ps-sidebar-inner": {
-        background: `${colors.primary[400]} !important`,
-      },
-      ".ps-icon-wrapper": {
-        backgroundColor: "transparent !important",
-      },
-      ".ps-inner-item": {
-        padding: "5px 35px 5px 20px !important",
-      },
-      ".ps-inner-item:hover": {
-        color: "#868dfb !important",
-      },
-      ".ps-menu-item.active": {
-        color: "#6870fa !important",
-      },
-    }),
-    [colors.primary]
-  );
-
-  const renderMenuItems = () => {
-    return menuItems.map((item) => {
-      if (item.isSubMenu) {
-        return (
-          <SubMenu
-            key={item.title}
-            label={item.title}
-            icon={item.icon}
-            style={{ color: colors.grey[100] }}
-          >
-            {item.items.map((subItem) => (
-              <SidebarItem
-                key={subItem.key}
-                title={subItem.title}
-                icon={subItem.icon}
-                selected={selected}
-                setSelected={setSelected}
-                onClickKey={() => onMenuItemClick({ key: subItem.key })}
-                to={subItem.to}
-              />
-            ))}
-          </SubMenu>
-        );
+  const handleSignOut = async () => {
+    try {
+      const response = await logout();
+      if (response.status === 200) {
+        setLocalData(isLoggedInText, false);
+        window.location.reload();
       }
+    } catch (error) {
+      console.error("Lỗi khi gọi API đăng xuất:", error);
+    }
+  };
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [selected, setSelected] = useState("Tổng quan");
+  const [openSubmenus, setOpenSubmenus] = useState({
+    learning: false,
+    tuition: false,
+  });
 
-      return (
-        <SidebarItem
-          key={item.key}
-          title={item.title}
-          icon={item.icon}
-          selected={selected}
-          setSelected={setSelected}
-          onClickKey={() => onMenuItemClick({ key: item.key })}
-          to={item.to}
-        />
-      );
-    });
+  const handleSubmenuToggle = (submenu) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [submenu]: !prev[submenu],
+    }));
   };
 
+  const menuItems = [
+    {
+      title: "Tổng quan",
+      icon: <HomeOutlined />,
+      key: "dashboard",
+      onClick: () => {
+        setSelected("Tổng quan");
+        onMenuItemClick({ key: "dashboard" });
+      },
+    },
+    {
+      title: "Lịch học",
+      icon: <CalendarTodayOutlined />,
+      key: "manageStudents", // original key
+      onClick: () => {
+        setSelected("Lịch học");
+        onMenuItemClick({ key: "manageStudents" });
+      },
+    },
+    {
+      title: "Học tập",
+      icon: <SchoolOutlined />,
+      submenuKey: "learning",
+      submenu: [
+        {
+          title: "Đăng ký môn học",
+          icon: <BookOutlined />,
+          key: "enrollmentClass",
+          onClick: () => {
+            setSelected("Đăng ký môn học");
+            onMenuItemClick({ key: "enrollmentClass" });
+          },
+        },
+        {
+          title: "Bảng điểm",
+          icon: <GradeOutlined />,
+          key: "record",
+          onClick: () => {
+            setSelected("Bảng điểm");
+            onMenuItemClick({ key: "record" });
+          },
+        },
+        {
+          title: "Đánh giá học tập",
+          icon: <AssessmentOutlined />,
+          key: "reviews",
+          onClick: () => {
+            setSelected("Đánh giá học tập");
+            onMenuItemClick({ key: "reviews" });
+          },
+        },
+      ],
+    },
+    {
+      title: "Học phí",
+      icon: <MonetizationOnOutlined />,
+      submenuKey: "tuition",
+      submenu: [
+        {
+          title: "Hoá đơn học phí",
+          icon: <ReceiptOutlined />,
+          key: "manageBills",
+          onClick: () => {
+            setSelected("Hoá đơn học phí");
+            onMenuItemClick({ key: "manageBills" });
+          },
+        },
+        {
+          title: "Lịch sử thanh toán",
+          icon: <HistoryOutlined />,
+          key: "manageBillsHistory",
+          onClick: () => {
+            setSelected("Lịch sử thanh toán");
+            onMenuItemClick({ key: "manageBillsHistory" });
+          },
+        },
+      ],
+    },
+  ];
+
   return (
-    <Box sx={sidebarStyles}>
-      <Sidebar collapsed={isCollapsed}>
-        <Menu iconShape="square">
-          <SidebarHeader
-            isCollapsed={isCollapsed}
-            setIsCollapsed={setIsCollapsed}
-            colors={colors}
-          />
-
-          <UserProfile isCollapsed={isCollapsed} colors={colors} />
-
-          <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-            {renderMenuItems()}
+    <Box
+      sx={{
+        width: isCollapsed ? "80px" : "260px",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        bgcolor: theme.palette.mode === "dark" ? colors.primary[600] : "#ffffff",
+        borderRight: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#e2e8f0"}`,
+        boxShadow: "4px 0 20px rgba(0,0,0,0.01)",
+        transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        position: "sticky",
+        top: 0,
+        left: 0,
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: isCollapsed ? "center" : "space-between",
+          alignItems: "center",
+          px: isCollapsed ? 1 : 2.5,
+          py: 2,
+          height: "70px",
+          borderBottom: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}`,
+        }}
+      >
+        {!isCollapsed && (
+          <Box display="flex" alignItems="center" gap={1.5}>
+            <img src={logo} alt="Logo" style={{ width: 32, height: 32, borderRadius: "6px" }} />
+            <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: "0.5px", color: theme.palette.mode === "dark" ? "#fff" : "#1e3a8a" }}>
+              STUDENT
+            </Typography>
           </Box>
-        </Menu>
-      </Sidebar>
+        )}
+        <IconButton onClick={() => setIsCollapsed(!isCollapsed)} sx={{ color: theme.palette.mode === "dark" ? "#94a3b8" : "#64748b" }}>
+          <MenuOutlined />
+        </IconButton>
+      </Box>
+
+      {/* User Profile */}
+      {!isCollapsed && (
+        <Box
+          sx={{
+            p: 3,
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            borderBottom: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}`,
+          }}
+        >
+          <Box sx={{ position: "relative", mb: 1.5 }}>
+            <Avatar
+              sx={{
+                width: 64,
+                height: 64,
+                bgcolor: "#ea580c",
+                fontSize: "1.5rem",
+                fontWeight: "bold",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                border: "2px solid #fff",
+              }}
+            >
+              HN
+            </Avatar>
+            <Box
+              sx={{
+                position: "absolute",
+                bottom: 2,
+                right: 2,
+                width: 12,
+                height: 12,
+                borderRadius: "50%",
+                bgcolor: "#10b981",
+                border: "2px solid #fff",
+              }}
+            />
+          </Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+            }}
+          >
+            Harry Nguyen
+          </Typography>
+          <Typography variant="h6" sx={{ color: colors.greenAccent[500], fontWeight: 600, mt: 0.5 }}>
+            Học viên
+          </Typography>
+        </Box>
+      )}
+
+      {/* Menu Items */}
+      <Box sx={{ overflowY: "auto", flexGrow: 1, px: 1.5, py: 2 }}>
+        <List sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+          {menuItems.map((item) => (
+            <Box key={item.title}>
+              {item.submenu ? (
+                <>
+                  <ListItemButton
+                    onClick={() => handleSubmenuToggle(item.submenuKey)}
+                    sx={{
+                      minHeight: 44,
+                      borderRadius: "10px",
+                      justifyContent: isCollapsed ? "center" : "initial",
+                      px: 2,
+                      color: theme.palette.mode === "dark" ? "#94a3b8" : "#475569",
+                      "&:hover": {
+                        bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                        color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                      },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        minWidth: 0,
+                        mr: isCollapsed ? 0 : 2,
+                        color: "inherit",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    {!isCollapsed && (
+                      <>
+                        <ListItemText 
+                          primary={item.title} 
+                          primaryTypographyProps={{ fontSize: "0.95rem", fontWeight: 600 }}
+                        />
+                        {openSubmenus[item.submenuKey] ? (
+                          <ExpandLess sx={{ fontSize: 18 }} />
+                        ) : (
+                          <ExpandMore sx={{ fontSize: 18 }} />
+                        )}
+                      </>
+                    )}
+                  </ListItemButton>
+                  <Collapse
+                    in={!isCollapsed && openSubmenus[item.submenuKey]}
+                    timeout="auto"
+                    unmountOnExit
+                  >
+                    <List component="div" disablePadding sx={{ mt: 0.5, display: "flex", flexDirection: "column", gap: 0.5 }}>
+                      {item.submenu.map((subItem) => {
+                        const isSelected = selected === subItem.title;
+                        return (
+                          <ListItemButton
+                            key={subItem.title}
+                            selected={isSelected}
+                            onClick={subItem.onClick}
+                            sx={{
+                              pl: 4,
+                              pr: 2,
+                              minHeight: 40,
+                              borderRadius: "8px",
+                              color: isSelected 
+                                ? (theme.palette.mode === "dark" ? "#fff" : "#ea580c")
+                                : (theme.palette.mode === "dark" ? "#94a3b8" : "#64748b"),
+                              bgcolor: isSelected 
+                                ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                                : "transparent",
+                              "&.Mui-selected": {
+                                bgcolor: isSelected 
+                                  ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                                  : "transparent",
+                                "&:hover": {
+                                  bgcolor: isSelected 
+                                    ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.25)" : "rgba(234, 88, 12, 0.12)")
+                                    : "transparent",
+                                }
+                              },
+                              "&:hover": {
+                                color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                                bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                              },
+                            }}
+                          >
+                            <ListItemIcon
+                              sx={{ 
+                                minWidth: 0, 
+                                mr: 2, 
+                                color: "inherit",
+                                display: "flex",
+                                alignItems: "center",
+                                fontSize: "1.2rem",
+                              }}
+                            >
+                              {subItem.icon}
+                            </ListItemIcon>
+                            <ListItemText 
+                              primary={subItem.title} 
+                              primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 550 }}
+                            />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </>
+              ) : (
+                <ListItemButton
+                  selected={selected === item.title}
+                  onClick={item.onClick}
+                  sx={{
+                    minHeight: 44,
+                    borderRadius: "10px",
+                    justifyContent: isCollapsed ? "center" : "initial",
+                    px: 2,
+                    color: selected === item.title
+                      ? (theme.palette.mode === "dark" ? "#fff" : "#ea580c")
+                      : (theme.palette.mode === "dark" ? "#94a3b8" : "#475569"),
+                    bgcolor: selected === item.title
+                      ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                      : "transparent",
+                    "&.Mui-selected": {
+                      bgcolor: selected === item.title
+                        ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)")
+                        : "transparent",
+                    },
+                    "&:hover": {
+                      color: theme.palette.mode === "dark" ? "#fff" : "#0f172a",
+                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: isCollapsed ? 0 : 2,
+                      color: "inherit",
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  {!isCollapsed && (
+                    <ListItemText 
+                      primary={item.title} 
+                      primaryTypographyProps={{ fontSize: "0.95rem", fontWeight: 600 }}
+                    />
+                  )}
+                </ListItemButton>
+              )}
+            </Box>
+          ))}
+        </List>
+      </Box>
+
+      {/* Bottom Settings & Logout Section */}
+      <Box sx={{ mt: "auto", p: 2, borderTop: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}` }}>
+        <List sx={{ p: 0, display: "flex", flexDirection: "column", gap: 0.5 }}>
+          {/* Settings / Toggle Theme */}
+          <ListItemButton
+            onClick={colorMode.toggleColorMode}
+            sx={{
+              minHeight: 38,
+              borderRadius: "8px",
+              justifyContent: isCollapsed ? "center" : "initial",
+              px: 1.5,
+              color: "text.secondary",
+              "&:hover": { bgcolor: "rgba(0,0,0,0.02)" },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 1.5, color: "inherit" }}>
+              <SettingsIcon sx={{ fontSize: 20 }} />
+            </ListItemIcon>
+            {!isCollapsed && (
+              <ListItemText
+                primary="Cấu hình"
+                primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 600 }}
+              />
+            )}
+          </ListItemButton>
+
+          {/* Log out */}
+          <ListItemButton
+            onClick={handleSignOut}
+            sx={{
+              minHeight: 38,
+              borderRadius: "8px",
+              justifyContent: isCollapsed ? "center" : "initial",
+              px: 1.5,
+              color: "#ef4444",
+              "&:hover": { bgcolor: "rgba(239, 68, 68, 0.05)" },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: isCollapsed ? 0 : 1.5, color: "inherit" }}>
+              <LogoutIcon sx={{ fontSize: 20 }} />
+            </ListItemIcon>
+            {!isCollapsed && (
+              <ListItemText
+                primary="Đăng xuất"
+                primaryTypographyProps={{ fontSize: "0.85rem", fontWeight: 600 }}
+              />
+            )}
+          </ListItemButton>
+        </List>
+      </Box>
     </Box>
   );
 };

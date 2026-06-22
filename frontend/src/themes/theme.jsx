@@ -135,7 +135,7 @@ export const themeSettings = (mode) => {
         ? {
             // palette values for dark mode
             primary: {
-              main: colors.primary[500],
+              main: "#ea580c",
             },
             secondary: {
               main: colors.greenAccent[500],
@@ -152,7 +152,7 @@ export const themeSettings = (mode) => {
         : {
             // palette values for light mode
             primary: {
-              main: colors.primary[100],
+              main: "#ea580c",
             },
             secondary: {
               main: colors.greenAccent[500],
@@ -168,31 +168,127 @@ export const themeSettings = (mode) => {
           }),
     },
     typography: {
-      fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-      fontSize: 12,
+      fontFamily: ["Plus Jakarta Sans", "sans-serif"].join(","),
+      fontSize: 13,
       h1: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 40,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 36,
+        fontWeight: 700,
       },
       h2: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 32,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 28,
+        fontWeight: 700,
       },
       h3: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 24,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 22,
+        fontWeight: 600,
       },
       h4: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 20,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 18,
+        fontWeight: 600,
       },
       h5: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 16,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 15,
+        fontWeight: 500,
       },
       h6: {
-        fontFamily: ["Source Sans Pro", "sans-serif"].join(","),
-        fontSize: 14,
+        fontFamily: ["Outfit", "sans-serif"].join(","),
+        fontSize: 13,
+        fontWeight: 500,
+      },
+    },
+    components: {
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: "10px",
+            textTransform: "none",
+            fontWeight: 600,
+            boxShadow: "none",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              boxShadow: "none",
+            },
+          },
+          containedPrimary: {
+            backgroundColor: "#ea580c",
+            color: "#fff",
+            "&:hover": {
+              backgroundColor: "#d97706",
+            },
+          },
+        },
+      },
+      MuiOutlinedInput: {
+        styleOverrides: {
+          root: {
+            borderRadius: "10px",
+          },
+        },
+      },
+      MuiCard: {
+        styleOverrides: {
+          root: {
+            borderRadius: "16px",
+            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.015), 0px 2px 4px rgba(0, 0, 0, 0.01)",
+            backgroundImage: "none",
+          },
+        },
+      },
+      MuiPaper: {
+        styleOverrides: {
+          root: {
+            borderRadius: "16px",
+            boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.015), 0px 2px 4px rgba(0, 0, 0, 0.01)",
+            backgroundImage: "none",
+          },
+        },
+      },
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            padding: "14px 16px",
+            borderBottom: "1px solid rgba(0, 0, 0, 0.05)",
+          },
+          head: {
+            fontWeight: 700,
+            fontSize: "0.85rem",
+            color: "#64748b",
+            textTransform: "uppercase",
+            letterSpacing: "0.5px",
+            backgroundColor: mode === "dark" ? "rgba(255, 255, 255, 0.02)" : "#f8fafc",
+          },
+        },
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            "&:hover": {
+              backgroundColor: mode === "dark" ? "rgba(255, 255, 255, 0.02) !important" : "#fafafa !important",
+            },
+          },
+        },
+      },
+      MuiChip: {
+        styleOverrides: {
+          root: {
+            borderRadius: "8px",
+            fontWeight: 600,
+            fontSize: "0.75rem",
+          },
+        },
+      },
+      MuiDialog: {
+        styleOverrides: {
+          paper: {
+            borderRadius: "16px",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+          },
+        },
       },
     },
   };

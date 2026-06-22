@@ -1,4 +1,4 @@
-import { all, call, put, takeEvery } from "redux-saga/effects";
+import { all, call, put, takeEvery, delay } from "redux-saga/effects";
 
 import { login, logout } from "../../services/auth.service";
 import { removeLocalData, setLocalData } from "../../services/localStorage";
@@ -25,8 +25,8 @@ function* loginSaga({ payload }) {
         yield put(
           authSlice.actions.loginSuccess({ role, studentId, teacherId })
         );
-        // window.location.reload();
         yield put(alertSlice.actions.success("Đăng nhập thành công"));
+        yield delay(1500);
         window.location.reload();
       } else {
         console.log("**Error");
@@ -59,6 +59,7 @@ function* logoutSaga() {
     removeLocalData("userId");
     removeLocalData("studentId");
     removeLocalData("teacherId");
+    yield delay(1500);
     window.location.reload();
   }
 }

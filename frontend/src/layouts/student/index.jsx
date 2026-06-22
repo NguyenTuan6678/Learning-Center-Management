@@ -1,26 +1,18 @@
 import { useState } from "react";
-import { Layout } from "antd";
+import { Box, CssBaseline, ThemeProvider } from "@mui/material";
 import AppHeader1 from "./navigation/topbar";
 import AppFooter1 from "./navigation/footer";
 import AppContent1 from "./navigation/content";
 import BreadCrumb from "../../components/breadcrumbs";
 import AppSider1 from "./navigation/sidebar";
 import { ColorModeContext, useMode } from "../../themes/theme";
-import "./index.css";
-import { CssBaseline, ThemeProvider } from "@mui/material";
 import StudentBills from "./page/student.bill";
 import PaidAndCancelledBills from "./page/student.bill.history";
 import StudentEnrollment from "./page/reg.class";
+import StudentDashboardOverview from "./page/student.dashboard";
 
 const componentMap = {
-  dashboard: () => (
-    <div
-      className="site-layout-background"
-      style={{ padding: 24, minHeight: 360 }}
-    >
-      Dashboard Content
-    </div>
-  ),
+  dashboard: (onNavigate) => <StudentDashboardOverview onNavigate={onNavigate} />,
   manageBills: () => <StudentBills />,
   manageBillsHistory: () => <PaidAndCancelledBills />,
   enrollmentClass: () => <StudentEnrollment />,
@@ -28,7 +20,6 @@ const componentMap = {
 
 const StudentDashboard = () => {
   const [theme, colorMode] = useMode();
-  const [isSidebar, setIsSidebar] = useState(true);
   const [selectedMenuItem, setSelectedMenuItem] = useState("dashboard");
 
   const handleMenuItemClick = (e) => {
@@ -36,16 +27,14 @@ const StudentDashboard = () => {
   };
 
   const renderContent = () => {
-    const ComponentToRender = componentMap[selectedMenuItem];
-    return ComponentToRender ? (
-      <ComponentToRender />
+    const componentFn = componentMap[selectedMenuItem];
+    if (selectedMenuItem === "dashboard" && componentFn) {
+      return componentFn(setSelectedMenuItem);
+    }
+    return componentFn ? (
+      componentFn()
     ) : (
-      <div
-        className="site-layout-background"
-        style={{ padding: 24, minHeight: 360 }}
-      >
-        {selectedMenuItem} Content
-      </div>
+      <Box sx={{ p: 3, minHeight: 360 }}>{selectedMenuItem} Content</Box>
     );
   };
 
@@ -53,30 +42,37 @@ const StudentDashboard = () => {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <div className="app">
+        <Box sx={{ display: "flex", minHeight: "100vh" }}>
           <AppSider1
             onMenuItemClick={handleMenuItemClick}
             selectedKeys={[selectedMenuItem]}
-            isSidebar={isSidebar}
           />
-          <main className="content">
-            <AppHeader1 setIsSidebar={setIsSidebar} />
-            <Layout
-              style={{
-                minHeight: "91vh",
+          <Box
+            component="main"
+            sx={{
+              flexGrow: 1,
+              display: "flex",
+              flexDirection: "column",
+              bgcolor: theme.palette.mode === "dark" ? "background.default" : "#f8fafc",
+              minHeight: "100vh",
+            }}
+          >
+            <AppHeader1 />
+            <Box
+              sx={{
+                flexGrow: 1,
+                p: 3,
+                display: "flex",
                 flexDirection: "column",
-                flex: 1,
-                marginLeft: 0,
+                gap: 2,
               }}
             >
               <BreadCrumb selectedMenuItem={selectedMenuItem} />
               <AppContent1>{renderContent()}</AppContent1>
-              <AppFooter1
-                style={{ textAlign: "right", padding: "0 16px 24px" }}
-              />
-            </Layout>
-          </main>
-        </div>
+            </Box>
+            <AppFooter1 />
+          </Box>
+        </Box>
       </ThemeProvider>
     </ColorModeContext.Provider>
   );

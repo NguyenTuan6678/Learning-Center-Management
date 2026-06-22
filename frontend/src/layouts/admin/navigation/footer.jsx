@@ -10,17 +10,12 @@ const AppFooter = () => {
       component="footer"
       sx={{
         width: "100%",
-        py: 3,
+        py: 2.5,
         px: 2,
+        mt: "auto", // Push footer to bottom of flex container
         textAlign: "center",
-        color: colors.grey[100],
-        backgroundColor: colors.primary[400],
-        borderTop: `1px solid ${colors.primary[500]}`,
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: theme.zIndex.drawer + 1,
+        color: theme.palette.mode === "dark" ? "#94a3b8" : "#64748b",
+        borderTop: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#e2e8f0"}`,
         transition: theme.transitions.create(["background-color", "color"], {
           duration: theme.transitions.duration.standard,
         }),

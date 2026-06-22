@@ -1,75 +1,66 @@
-import { Box, Container } from "@mui/material";
-import Grid from "@mui/material/Grid2";
-import backgroundImage from "../../assets/imgs/background.png";
+import { Box } from "@mui/material";
 
-import MainCard from "../../components/cards";
-
-export const AuthWrapper = ({ children }) => (
+export const AuthWrapper = ({ children, artworkSrc }) => (
   <Box
     sx={{
       minHeight: "100vh",
       display: "flex",
       justifyContent: "center",
       alignItems: "center",
-      backgroundImage: `url(${backgroundImage})`,
-      backgroundSize: "cover",
-      backgroundRepeat: "no-repeat",
-      bgcolor: "#1a3632",
+      bgcolor: "#111827", // Dark background to match screenshot
+      p: { xs: 2, sm: 3, md: 4 },
     }}
-    xs={12}
   >
-    <Grid
-      container
-      justifyContent="center"
-      alignItems="center"
-      sx={{ height: "100%" }}
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: { xs: 450, md: 950 },
+        bgcolor: "#ffffff",
+        borderRadius: "28px",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: { xs: "column-reverse", md: "row" }, // Mobile: image on top of form (row-reverse if layout order changes, or column-reverse so form is below image when artwork is on right)
+        transition: "all 0.3s ease-in-out",
+      }}
     >
-      <Grid>
+      {/* Form content (Left column on desktop, Bottom column on mobile) */}
+      <Box
+        sx={{
+          flex: 1.1,
+          p: { xs: 4, sm: 5, md: 6 },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+        }}
+      >
+        {children}
+      </Box>
+
+      {/* Artwork Panel (Right column on desktop, Top banner on mobile) */}
+      <Box
+        sx={{
+          flex: 0.9,
+          p: { xs: 2, md: 2.5 },
+          display: "flex",
+          alignItems: "stretch",
+          justifyContent: "center",
+        }}
+      >
         <Box
+          component="img"
+          src={artworkSrc}
+          alt="Login Artwork"
           sx={{
-            position: "relative",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            width: "100%",
+            height: { xs: 200, sm: 260, md: "100%" },
+            minHeight: { md: 540 },
+            objectFit: "cover",
+            borderRadius: "20px",
+            boxShadow: "0 8px 16px rgba(0,0,0,0.06)",
           }}
-        >
-          <MainCard
-            sx={{
-              maxWidth: 320,
-              margin: { xs: 2, md: 3 },
-              zIndex: 10,
-              borderRadius: 4,
-            }}
-            boxShadow
-          >
-            <Box sx={{ p: { xs: 2, sm: 3, md: 4, xl: 5 } }}>{children}</Box>
-          </MainCard>
-          <Container
-            sx={{
-              position: "absolute",
-              zIndex: 8,
-              maxWidth: 300,
-              height: "25px",
-              opacity: 0.08,
-              bgcolor: "white",
-              borderRadius: 4,
-              top: 8,
-            }}
-          />
-          <Container
-            sx={{
-              position: "absolute",
-              zIndex: 6,
-              maxWidth: 290,
-              height: "90px",
-              opacity: 0.06,
-              bgcolor: "white",
-              borderRadius: 4,
-              bottom: 8,
-            }}
-          />
-        </Box>
-      </Grid>
-    </Grid>
+        />
+      </Box>
+    </Box>
   </Box>
 );

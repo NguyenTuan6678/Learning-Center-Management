@@ -89,7 +89,7 @@ const BreadCrumb = ({ selectedMenuItem }) => {
               color:
                 index < items.length - 1
                   ? colors.grey[100]
-                  : colors.blueAccent[500],
+                  : "#ea580c",
             }}
           >
             {item.icon && (
@@ -112,7 +112,7 @@ const BreadCrumb = ({ selectedMenuItem }) => {
                   alignItems: "center",
                   color: "inherit",
                   "&:hover": {
-                    color: colors.blueAccent[400],
+                    color: "#ea580c",
                   },
                 }}
               >

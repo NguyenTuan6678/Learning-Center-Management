@@ -28,16 +28,16 @@ const MainCard = forwardRef(
         {...others}
         sx={{
           border: border ? "1px solid" : "none",
-          borderRadius: 2,
-          borderColor: colors.grey[100],
-          boxShadow:
-            boxShadow && !border
-              ? `0px 2px 8px ${alpha(colors.grey[300], 0.15)}`
-              : "inherit",
-          ":hover": {
+          borderRadius: "16px",
+          borderColor: (theme) => theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9",
+          boxShadow: "0px 4px 20px rgba(0,0,0,0.015), 0px 2px 4px rgba(0,0,0,0.01)",
+          backgroundImage: "none",
+          bgcolor: (theme) => theme.palette.mode === "dark" ? "background.paper" : "#ffffff",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
+          "&:hover": {
             boxShadow: boxShadow
-              ? `0px 2px 8px ${alpha(colors.grey[300], 0.5)}`
-              : "inherit",
+              ? "0px 10px 25px rgba(0,0,0,0.08)"
+              : "0px 4px 20px rgba(0,0,0,0.015), 0px 2px 4px rgba(0,0,0,0.01)",
           },
           "& pre": {
             m: 0,

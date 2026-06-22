@@ -31,6 +31,7 @@ import moment from "moment";
 import { getLocalData } from "../../../services/localStorage";
 import { VNPayService } from "../../../services/vnpay.service";
 import { getAllBillDetailsForStudent } from "../../../services/billdetail.service";
+import * as alertService from "../../../services/alert.service";
 
 const StudentBills = () => {
   // const navigate = useNavigate();
@@ -45,26 +46,57 @@ const StudentBills = () => {
     (state) => state.auth.studentId || getLocalData("studentId")
   );
 
+  const fetchBills = async () => {
+    if (!studentId) {
+      console.error("StudentId is missing!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await getAllBillDetailsForStudent(studentId);
+      console.log("Fetched bills: ", res.data);
+      setBills(res.data || []);
+    } catch (error) {
+      console.error("Error fetching bills:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchBills = async () => {
-      if (!studentId) {
-        console.error("StudentId is missing!");
-        return;
-      }
-
-      setLoading(true);
-      try {
-        const res = await getAllBillDetailsForStudent(studentId);
-        console.log("Fetched bills: ", res.data);
-        setBills(res.data || []);
-      } catch (error) {
-        console.error("Error fetching bills:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchBills();
+  }, [studentId]);
+
+  useEffect(() => {
+    // Parse query parameters from the hash (since HashRouter is used)
+    const hash = window.location.hash;
+    if (hash.includes("?")) {
+      const queryString = hash.split("?")[1];
+      const params = new URLSearchParams(queryString);
+      const paymentStatus = params.get("paymentStatus");
+
+      if (paymentStatus) {
+        if (paymentStatus === "success") {
+          alertService.success("Thanh toán hóa đơn thành công!");
+        } else {
+          alertService.error("Thanh toán thất bại hoặc đã bị hủy.");
+        }
+
+        // Clean up parameters from the URL hash to avoid double alerts on page refresh
+        const cleanHash = hash.split("?")[0];
+        window.history.replaceState(
+          null,
+          "",
+          window.location.pathname + window.location.search + cleanHash
+        );
+
+        // Refresh bills list
+        if (studentId) {
+          fetchBills();
+        }
+      }
+    }
   }, [studentId]);
 
   const handleViewDetails = (bill) => {
@@ -79,7 +111,8 @@ const StudentBills = () => {
     try {
       const response = await VNPayService.createPayment(billId);
       if (response.data?.paymentUrl) {
-        window.open(response.data.paymentUrl, "_blank");
+        // Redirect in the same tab instead of window.open
+        window.location.href = response.data.paymentUrl;
       }
     } catch (error) {
       console.error("Payment error:", error);

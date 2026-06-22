@@ -35,6 +35,15 @@ const AppHeader = () => {
 
   const menuItems = [
     {
+      key: "theme",
+      icon: theme.palette.mode === "dark" ? <LightModeOutlinedIcon style={{ fontSize: 16 }} /> : <DarkModeOutlinedIcon style={{ fontSize: 16 }} />,
+      label: theme.palette.mode === "dark" ? "Cài đặt: Giao diện sáng" : "Cài đặt: Giao diện tối",
+      onClick: colorMode.toggleColorMode,
+    },
+    {
+      type: "divider",
+    },
+    {
       key: "signout",
       icon: <LogoutOutlined />,
       label: "Đăng xuất",
@@ -43,18 +52,23 @@ const AppHeader = () => {
   ];
 
   return (
-    <Box display="flex" p={2} justifyContent="flex-end">
-      <IconButton onClick={colorMode.toggleColorMode}>
-        {colors === "dark" ? (
-          <DarkModeOutlinedIcon />
-        ) : (
-          <LightModeOutlinedIcon />
-        )}
-      </IconButton>
-      <Dropdown menu={{ items: menuItems }} placement="bottomRight" arrow>
-        <Avatar icon={<UserOutlined />} />
-      </Dropdown>
-    </Box>
+    <Box
+      display="flex"
+      py={1.5}
+      px={3}
+      justifyContent="flex-end"
+      alignItems="center"
+      gap={1.5}
+      sx={{
+        borderBottom: `1px solid ${theme.palette.mode === "dark" ? "#1e293b" : "#f1f5f9"}`,
+        bgcolor: theme.palette.mode === "dark" ? "rgba(20, 27, 45, 0.5)" : "rgba(255, 255, 255, 0.8)",
+        backdropFilter: "blur(12px)",
+        position: "sticky",
+        top: 0,
+        zIndex: 10,
+        height: "70px",
+      }}
+    />
   );
 };
 
