@@ -152,17 +152,43 @@ const ManageStudents = () => {
   };
 
   const handleEditClick = async (student) => {
+    let currentAccountId = "";
+    if (student.accountId) {
+      if (typeof student.accountId === "object") {
+        currentAccountId = student.accountId.accountId || student.accountId.id || "";
+      } else {
+        currentAccountId = student.accountId;
+      }
+    }
+
     try {
       setEditDialog({
         open: true,
-        student,
+        student: {
+          ...student,
+          accountId: currentAccountId,
+        },
         availableAccounts: [],
         loadingAccounts: true,
       });
       const res = await getAvailableAccounts();
+      
+      let accountsList = res.data || [];
+      if (student.accountId && typeof student.accountId === "object") {
+        const currentAccId = student.accountId.accountId || student.accountId.id;
+        const currentAccUsername = student.accountId.userName || student.accountId.username || "";
+        const exists = accountsList.some(acc => acc.id === currentAccId);
+        if (!exists && currentAccId) {
+          accountsList = [
+            { id: currentAccId, username: currentAccUsername },
+            ...accountsList
+          ];
+        }
+      }
+
       setEditDialog((prev) => ({
         ...prev,
-        availableAccounts: res.data || [],
+        availableAccounts: accountsList,
         loadingAccounts: false,
       }));
     } catch (error) {

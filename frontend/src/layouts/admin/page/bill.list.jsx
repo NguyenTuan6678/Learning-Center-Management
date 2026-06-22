@@ -147,15 +147,19 @@ const ManageBills = () => {
   };
 
   const handleUpdateBillDetail = async () => {
+    if (!selectedStudentId) {
+      showSnackbar("Vui lòng chọn học sinh!", "error");
+      return;
+    }
     setLoading(true);
     try {
       await updateBillDetail({
-        id: billDetailData?.id,
+        id: billDetailData?.billId,
         description: billDetailData?.description,
         amount: billDetailData?.amount,
         currency: billDetailData?.currency,
-        studentId: selectedStudentId,
-        parentId: selectedParentId,
+        studentId: selectedStudentId || null,
+        parentId: selectedParentId || null,
         paymentStatus: selectedBillStatus,
       });
       showSnackbar("Cập nhật hóa đơn thành công!");
@@ -456,7 +460,7 @@ const ManageBills = () => {
                   Chọn học sinh
                 </MenuItem>
                 {students.map((student) => (
-                  <MenuItem key={student.studentId} value={student.studentId}>
+                  <MenuItem key={student.id} value={student.id}>
                     {student.name}
                   </MenuItem>
                 ))}

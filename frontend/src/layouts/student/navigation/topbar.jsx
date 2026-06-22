@@ -74,12 +74,6 @@ const AppHeader1 = () => {
       <IconButton sx={{ color: theme.palette.mode === "dark" ? "#94a3b8" : "#64748b" }}>
         <NotificationsOutlinedIcon />
       </IconButton>
-      <IconButton 
-        onClick={colorMode.toggleColorMode}
-        sx={{ color: theme.palette.mode === "dark" ? "#94a3b8" : "#64748b" }}
-      >
-        <SettingsOutlinedIcon />
-      </IconButton>
     </Box>
   );
 };

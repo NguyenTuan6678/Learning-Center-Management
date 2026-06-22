@@ -115,10 +115,10 @@ const StudentDashboardOverview = ({ onNavigate }) => {
           borderRadius: "16px",
           background:
             theme.palette.mode === "dark"
-              ? `linear-gradient(100deg, ${colors.primary[600]} 0%, ${colors.primary[500]} 100%)`
-              : "linear-gradient(100deg, #e8f0fe 0%, #c2d7fa 100%)",
-          border: `1px solid ${theme.palette.mode === "dark" ? colors.primary[400] : "#cbd5e1"}`,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.03)",
+              ? "linear-gradient(135deg, rgba(234, 88, 12, 0.15) 0%, rgba(20, 27, 45, 0.4) 100%)"
+              : "linear-gradient(135deg, #fff7ed 0%, #ffedd5 100%)",
+          border: `1px solid ${theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.3)" : "rgba(234, 88, 12, 0.15)"}`,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.01)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
@@ -127,22 +127,22 @@ const StudentDashboardOverview = ({ onNavigate }) => {
         }}
       >
         <Box>
-          <Typography variant="h2" sx={{ fontWeight: 800, mb: 1, color: theme.palette.mode === "dark" ? "#fff" : "#1e3a8a" }}>
+          <Typography variant="h2" sx={{ fontWeight: 800, mb: 1, color: theme.palette.mode === "dark" ? "#ffedd5" : "#7c2d12" }}>
             Xin chào, Học viên! 👋
           </Typography>
-          <Typography variant="body1" sx={{ color: theme.palette.mode === "dark" ? "#cbd5e1" : "#1e40af" }}>
+          <Typography variant="body1" sx={{ color: theme.palette.mode === "dark" ? "#cbd5e1" : "#9a3412" }}>
             Học tập là hành trình trọn đời. Chúc bạn có một ngày học tập thật hiệu quả!
           </Typography>
         </Box>
         <Chip
-          icon={<ScheduleIcon style={{ color: "#1e3a8a", fontSize: 16 }} />}
+          icon={<ScheduleIcon style={{ color: theme.palette.mode === "dark" ? "#fdba74" : "#ea580c", fontSize: 16 }} />}
           label="Học Kỳ: Summer 2026"
           sx={{
             fontWeight: "bold",
-            px: 1,
-            bgcolor: "rgba(255,255,255,0.6)",
-            color: "#1e3a8a",
-            border: "1px solid rgba(30, 58, 138, 0.2)",
+            px: 1.5,
+            bgcolor: theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.2)" : "rgba(234, 88, 12, 0.08)",
+            color: theme.palette.mode === "dark" ? "#fdba74" : "#ea580c",
+            border: `1px solid ${theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.4)" : "rgba(234, 88, 12, 0.2)"}`,
           }}
         />
       </Box>
@@ -156,15 +156,17 @@ const StudentDashboardOverview = ({ onNavigate }) => {
               sx={{
                 borderRadius: "16px",
                 border: `1px solid ${theme.palette.mode === "dark" ? colors.primary[400] : "#f1f5f9"}`,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.015)",
                 cursor: card.action ? "pointer" : "default",
-                transition: "all 0.25s ease",
+                transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
                 bgcolor: theme.palette.mode === "dark" ? colors.primary[600] : "#fff",
                 "&:hover": card.action
                   ? {
                       transform: "translateY(-4px)",
-                      boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-                      borderColor: card.color,
+                      boxShadow: theme.palette.mode === "dark"
+                        ? "0 12px 25px rgba(0,0,0,0.4)"
+                        : "0 12px 25px rgba(234, 88, 12, 0.08)",
+                      borderColor: "#ea580c",
                     }
                   : {},
               }}
@@ -174,7 +176,7 @@ const StudentDashboardOverview = ({ onNavigate }) => {
                   {card.icon}
                 </Avatar>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6" sx={{ color: "text.secondary", fontWeight: 500, fontSize: "0.85rem" }}>
+                  <Typography variant="h6" sx={{ color: "text.secondary", fontWeight: 550, fontSize: "0.85rem" }}>
                     {card.title}
                   </Typography>
                   <Typography variant="h3" sx={{ fontWeight: 800, mt: 0.5, color: "text.primary" }}>
@@ -198,7 +200,7 @@ const StudentDashboardOverview = ({ onNavigate }) => {
           <Card
             sx={{
               borderRadius: "16px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.015)",
               bgcolor: theme.palette.mode === "dark" ? colors.primary[600] : "#fff",
               border: `1px solid ${theme.palette.mode === "dark" ? colors.primary[400] : "#f1f5f9"}`,
             }}
@@ -212,7 +214,7 @@ const StudentDashboardOverview = ({ onNavigate }) => {
                   variant="text"
                   endIcon={<ArrowForwardIcon />}
                   onClick={() => onNavigate("manageStudents")} // Map to Calendar
-                  sx={{ textTransform: "none", fontWeight: 600 }}
+                  sx={{ textTransform: "none", fontWeight: 600, color: "#ea580c", "&:hover": { color: "#d97706" } }}
                 >
                   Xem chi tiết
                 </Button>
@@ -223,7 +225,7 @@ const StudentDashboardOverview = ({ onNavigate }) => {
                   <Box key={i}>
                     <ListItem sx={{ py: 2, px: 0 }}>
                       <ListItemAvatar>
-                        <Avatar sx={{ bgcolor: "primary.main", color: "#fff", borderRadius: "10px" }}>
+                        <Avatar sx={{ bgcolor: "rgba(234, 88, 12, 0.1)", color: "#ea580c", borderRadius: "10px" }}>
                           <ScheduleIcon />
                         </Avatar>
                       </ListItemAvatar>
@@ -233,7 +235,18 @@ const StudentDashboardOverview = ({ onNavigate }) => {
                             <Typography variant="h5" sx={{ fontWeight: 700 }}>
                               {item.subject}
                             </Typography>
-                            <Chip label={item.day} color={item.day === "Hôm nay" ? "primary" : "default"} size="small" sx={{ fontWeight: "bold" }} />
+                            <Chip
+                              label={item.day}
+                              size="small"
+                              sx={{
+                                fontWeight: "bold",
+                                bgcolor: item.day === "Hôm nay"
+                                  ? (theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.25)" : "rgba(234, 88, 12, 0.1)")
+                                  : (theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"),
+                                color: item.day === "Hôm nay" ? "#ea580c" : "text.secondary",
+                                border: `1px solid ${item.day === "Hôm nay" ? "rgba(234, 88, 12, 0.2)" : "transparent"}`,
+                              }}
+                            />
                           </Box>
                         }
                         secondary={
@@ -257,7 +270,7 @@ const StudentDashboardOverview = ({ onNavigate }) => {
             sx={{
               height: "100%",
               borderRadius: "16px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.015)",
               bgcolor: theme.palette.mode === "dark" ? colors.primary[600] : "#fff",
               border: `1px solid ${theme.palette.mode === "dark" ? colors.primary[400] : "#f1f5f9"}`,
             }}
@@ -273,12 +286,17 @@ const StudentDashboardOverview = ({ onNavigate }) => {
                     sx={{
                       p: 2.5,
                       borderRadius: "12px",
-                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.02)" : "#f8fafc",
-                      border: `1px solid ${theme.palette.mode === "dark" ? colors.primary[400] : "#f1f5f9"}`,
+                      bgcolor: theme.palette.mode === "dark" ? "rgba(255,255,255,0.01)" : "#fafafa",
+                      border: `1px solid ${theme.palette.mode === "dark" ? "rgba(255,255,255,0.05)" : "#f1f5f9"}`,
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        borderColor: "rgba(234, 88, 12, 0.3)",
+                        bgcolor: theme.palette.mode === "dark" ? "rgba(234, 88, 12, 0.02)" : "#fffaf7",
+                      }
                     }}
                   >
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                      <Typography variant="h5" sx={{ fontWeight: 700, color: "primary.main" }}>
+                      <Typography variant="h5" sx={{ fontWeight: 700, color: "#ea580c" }}>
                         {ann.title}
                       </Typography>
                       <Typography variant="caption" sx={{ color: "text.secondary" }}>

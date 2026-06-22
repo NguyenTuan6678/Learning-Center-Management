@@ -372,13 +372,14 @@ const ManageAccounts = () => {
               <TableCell>Tên đăng nhập</TableCell>
               <TableCell>Mật khẩu</TableCell>
               <TableCell>Vai trò</TableCell>
+              <TableCell>Liên kết</TableCell>
               <TableCell>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={7} align="center">
                   <CircularProgress />
                 </TableCell>
               </TableRow>
@@ -394,6 +395,27 @@ const ManageAccounts = () => {
                   <TableCell>{row.username}</TableCell>
                   <TableCell>••••••••</TableCell>
                   <TableCell>{row.role}</TableCell>
+                  <TableCell>
+                    {row.mappedType ? (
+                      <span style={{ fontSize: "0.9rem" }}>
+                        <strong>
+                          {row.mappedType === "STUDENT"
+                            ? "Học sinh"
+                            : "Giáo viên"}
+                          :{" "}
+                        </strong>
+                        {row.mappedName}
+                        <br />
+                        <span style={{ color: "#777", fontSize: "0.8rem" }}>
+                          ({row.mappedId})
+                        </span>
+                      </span>
+                    ) : (
+                      <span style={{ color: "#bbb", fontStyle: "italic" }}>
+                        Chưa liên kết
+                      </span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     <IconButton
                       onClick={() => handleDelete(row.id, row.role)}
@@ -412,7 +434,7 @@ const ManageAccounts = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={5} align="center">
+                <TableCell colSpan={7} align="center">
                   Không có dữ liệu
                 </TableCell>
               </TableRow>
